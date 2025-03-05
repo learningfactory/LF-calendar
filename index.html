@@ -18,18 +18,26 @@
         document.addEventListener('DOMContentLoaded', function() {
             let calendarEl = document.getElementById('calendar');
 
-            window.calendar = new FullCalendar.Calendar(calendarEl, { // 👈 전역 변수로 설정
+            window.calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
                 slotMinTime: '09:00:00',
                 slotMaxTime: '18:00:00',
-                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
+
                 eventSources: [
-                    { googleCalendarId: "fjsldvorxhflgmail.com", color: "#4285F4" },
-                    { googleCalendarId: "learningfactory01@gmail.com", color: "#34A853" },
+                    {
+                        googleCalendarId: "fjsldvorxhfl@gmail.com", // 📌 캘린더 ID
+                        color: "#4285F4",
+                        apiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM" // 📌 여기서 API 키 설정
+                    },
+                    {
+                        googleCalendarId: "learningfactory01@gmail.com", // 📌 추가 캘린더
+                        color: "#34A853",
+                        apiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM"
+                    }
                 ]
             });
 
-            window.calendar.render(); // 👈 FullCalendar 실행
+            window.calendar.render(); // ✅ FullCalendar 실행
         });
     </script>
 </body>
