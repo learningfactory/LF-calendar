@@ -70,11 +70,21 @@
                 });
                 calendar.render();
             }
-
-            gapi.load("client:auth2", initClient);
+            // ✅ gapi 로드 후 실행되도록 변경
+            function loadGapi() {
+                gapi.load("client:auth2", initClient);
+            }
+            window.onload = function() {
+                if (typeof gapi !== "undefined") {
+                    loadGapi();
+                } else {
+                    console.error("Google API 스크립트가 로드되지 않았습니다.");
+                }
+            };
         });
     </script>
 
+    <!-- ✅ gapi 스크립트를 마지막에 로드 -->
     <script async defer src="https://apis.google.com/js/api.js" onload="loadGapi()"></script>
 </body>
 </html>
