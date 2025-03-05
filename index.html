@@ -18,23 +18,26 @@
         document.addEventListener('DOMContentLoaded', function() {
             let calendarEl = document.getElementById('calendar');
 
-            window.calendar = new FullCalendar.Calendar(calendarEl, { // 👈 전역 변수로 설정
+            window.calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
                 slotMinTime: '09:00:00',
                 slotMaxTime: '23:00:00',
-                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
+
                 eventSources: [
-                    { googleCalendarId: "fjsldvorxhfl@gmail.com", color: "#4285F4" },
-                    { googleCalendarId: "learningfactory01@gmail.com", color: "#34A853" },
-                    //{ googleCalendarId: "learningfactory11@gmail.com", color: "#34A854" },
-                    { googleCalendarId: "learningfactory03@gmail.com", color: "#34A855" }
-                    //{ googleCalendarId: "learningfactory05@gmail.com", color: "#34A856" },
-                    //{ googleCalendarId: "learningfactory06@gmail.com", color: "#34A857" },
-                    //{ googleCalendarId: "learningfactory10@gmail.com", color: "#34A858" }
+                    {
+                        googleCalendarId: "learningfactory01@gmail.com", // 📌 캘린더 ID
+                        color: "#4285F4",
+                        apiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM" // 📌 여기서 API 키 설정
+                    },
+                    {
+                        googleCalendarId: "learningfactory11@gmail.com", // 📌 추가 캘린더
+                        color: "#34A853",
+                        apiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM"
+                    }
                 ]
             });
 
-            window.calendar.render(); // 👈 FullCalendar 실행
+            window.calendar.render(); // ✅ FullCalendar 실행
         });
     </script>
 </body>
