@@ -7,7 +7,8 @@
     
     <!-- FullCalendar 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.8/index.global.min.js"></script>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css">
 </head>
 <body>
@@ -18,27 +19,20 @@
         document.addEventListener('DOMContentLoaded', function() {
             let calendarEl = document.getElementById('calendar');
 
-            window.calendar = new FullCalendar.Calendar(calendarEl, {
+            let calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
                 slotMinTime: '09:00:00',
                 slotMaxTime: '18:00:00',
 
+                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM", // 🔹 API 키 설정 위치 변경
+
                 eventSources: [
                     {
-                        googleCalendarId: "fjsldvorxhfl@gmail.com", // 📌 캘린더 ID
-                        color: "#4285F4",
-                        apiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM" // 📌 여기서 API 키 설정
+                        googleCalendarId: "fjsldvorxhfl@gmail.com", // 📌 첫 번째 캘린더
+                        color: "#4285F4"
                     },
                     {
-                        googleCalendarId: "learningfactory01@gmail.com", // 📌 추가 캘린더
-                        color: "#34A853",
-                        apiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM"
+                        googleCalendarId: "learningfactory01@gmail.com", // 📌 두 번째 캘린더
+                        color: "#34A853"
                     }
-                ]
-            });
-
-            window.calendar.render(); // ✅ FullCalendar 실행
-        });
-    </script>
-</body>
-</html>
+               
