@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Calendar 연동</title>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+</head>
+<body>
+    <div id="calendar"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let calendarEl = document.getElementById('calendar');
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek', // 주간 뷰
+                slotMinTime: '09:00:00',  // 오전 9시부터 표시
+                slotMaxTime: '18:00:00',  // 오후 6시까지 (선택 사항)
+                googleCalendarApiKey: AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM, // 여기 API 키 입력
+                events: {
+                    googleCalendarId: fjsldvorxhfl@gmail.com // 여기 캘린더 ID 입력
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>
