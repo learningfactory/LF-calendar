@@ -8,7 +8,6 @@
     <!-- FullCalendar 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.8/index.global.min.js"></script>
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css">
 </head>
 <body>
@@ -16,23 +15,51 @@
     <div id="calendar"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             let calendarEl = document.getElementById('calendar');
 
-            let calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
-                slotMinTime: '09:00:00',
-                slotMaxTime: '18:00:00',
+            // ✅ Google Calendar API를 직접 호출하여 데이터 가져오기
+            async function fetchEvents(calendarId) {
+                const API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM";
+                const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?key=${API_KEY}`;
 
-                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM", // 🔹 API 키 설정 위치 변경
-
-                eventSources: [
-                    {
-                        googleCalendarId: "fjsldvorxhfl@gmail.com", // 📌 첫 번째 캘린더
-                        color: "#4285F4"
-                    },
-                    {
-                        googleCalendarId: "learningfactory01@gmail.com", // 📌 두 번째 캘린더
-                        color: "#34A853"
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
                     }
-               
+                    const data = await response.json();
+                    return data.items.map(event => ({
+                        title: event.summary,
+                        start: event.start.dateTime || event.start.date,
+                        end: event.end.dateTime || event.end.date
+                    }));
+                } catch (error) {
+                    console.error("Failed to fetch events:", error);
+                    return [];
+                }
+            }
+
+            // ✅ 여러 개의 캘린더에서 이벤트 가져오기
+            async function loadEvents() {
+                const primaryCalendarId = "fjsldvorxhfl@gmail.com"; // 📌 기본 캘린더
+                const secondaryCalendarId = "learningfactory01@gmail.com"; // 📌 추가 캘린더
+
+                const primaryEvents = await fetchEvents(primaryCalendarId);
+                const secondaryEvents = await fetchEvents(secondaryCalendarId);
+
+                let calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'timeGridWeek',
+                    slotMinTime: '09:00:00',
+                    slotMaxTime: '18:00:00',
+                    events: [...primaryEvents, ...secondaryEvents], // ✅ 여러 개의 이벤트 병합
+                });
+
+                calendar.render(); // ✅ FullCalendar 실행
+            }
+
+            loadEvents();
+        });
+    </script>
+</body>
+</html>
