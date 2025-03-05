@@ -15,98 +15,89 @@
     <button id="signout_button" style="display:none;">로그아웃</button>
     <div id="calendar"></div>
 
+    <!-- ✅ Google Calendar을 iframe으로 표시 -->
+    <iframe 
+        src="https://calendar.google.com/calendar/embed?src=your_calendar_id&ctz=Asia%2FSeoul" 
+        width="800" 
+        height="600" 
+        style="border: 1px solid #ccc;"
+        sandbox="allow-scripts">
+    </iframe>
+
     <script>
-        let CLIENT_ID = "236715550382-tq8n97cch62bo3jcvuflmij6rj3ab0qp.apps.googleusercontent.com"; // OAuth 클라이언트 ID
+        let CLIENT_ID = "236715550382-tq8n97cch62bo3jcvuflmij6rj3ab0qp.apps.googleusercontent.com"; // Google Cloud에서 발급받은 OAuth 클라이언트 ID
         let API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM"; // API 키
         let SCOPES = "https://www.googleapis.com/auth/calendar.readonly"; // 읽기 권한
 
-        let authorizeButton, signoutButton, calendarEl, calendar;
+        document.addEventListener('DOMContentLoaded', function() {
+            let calendarEl = document.getElementById('calendar');
+            let authorizeButton = document.getElementById("authorize_button");
+            let signoutButton = document.getElementById("signout_button");
 
-        function loadGapi() {
-            console.log("🔄 gapi 스크립트 로드 중...");
-            let script = document.createElement("script");
-            script.src = "https://apis.google.com/js/api.js";
-            script.async = true;
-            script.defer = true;
-            script.onload = function () {
-                console.log("✅ gapi 스크립트 로드 완료!");
-                gapi.load("client:auth2", initClient);
+            function handleAuthClick() {
+                gapi.auth.authorize(
+                    {
+                        client_id: CLIENT_ID,
+                        scope: SCOPES,
+                        immediate: false
+                    },
+                    updateSigninStatus
+                );
+            }
+
+            function handleSignoutClick() {
+                gapi.auth.signOut();
+                updateSigninStatus(false);
+            }
+
+            function updateSigninStatus(authResult) {
+                if (authResult && !authResult.error) {
+                    authorizeButton.style.display = "none";
+                    signoutButton.style.display = "block";
+                    loadCalendar();
+                } else {
+                    authorizeButton.style.display = "block";
+                    signoutButton.style.display = "none";
+                }
+            }
+
+            function loadCalendar() {
+                let calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'timeGridWeek',
+                    slotMinTime: '09:00:00',
+                    slotMaxTime: '18:00:00',
+                    googleCalendarApiKey: API_KEY,
+                    events: {
+                        googleCalendarId: "primary" // 기본 캘린더 사용
+                    }
+                });
+                calendar.render();
+            }
+
+            // ✅ gapi 로드 후 실행되도록 변경
+            function loadGapi() {
+                gapi.load("client", () => {
+                    gapi.client.setApiKey(API_KEY);
+                    gapi.auth.init(() => {
+                        updateSigninStatus(gapi.auth.getToken());
+                    });
+                });
+            }
+
+            window.onload = function() {
+                if (typeof gapi !== "undefined") {
+                    loadGapi();
+                } else {
+                    console.error("Google API 스크립트가 로드되지 않았습니다.");
+                }
             };
-            document.body.appendChild(script);
-        }
 
-        function initClient() {
-            gapi.client.init({
-                apiKey: API_KEY,
-                clientId: CLIENT_ID,
-                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
-                scope: SCOPES
-            }).then(() => {
-                console.log("✅ Google API 클라이언트 초기화 완료");
-                gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-                updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-            }).catch(error => console.error("❌ gapi.client.init 오류:", error));
-        }
-
-        function handleAuthClick() {
-            gapi.auth2.getAuthInstance().signIn();
-        }
-
-        function handleSignoutClick() {
-            gapi.auth2.getAuthInstance().signOut();
-        }
-
-        function updateSigninStatus(isSignedIn) {
-            if (isSignedIn) {
-                authorizeButton.style.display = "none";
-                signoutButton.style.display = "block";
-                loadCalendar();
-            } else {
-                authorizeButton.style.display = "block";
-                signoutButton.style.display = "none";
-            }
-        }
-
-        function loadCalendar() {
-            if (calendar) {
-                calendar.destroy();
-            }
-
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
-                slotMinTime: '09:00:00',
-                slotMaxTime: '18:00:00',
-                events: fetchGoogleCalendarEvents
-            });
-
-            calendar.render();
-        }
-
-        function fetchGoogleCalendarEvents(info, successCallback, failureCallback) {
-            gapi.client.calendar.events.list({
-                calendarId: "primary",
-                timeMin: (new Date()).toISOString(),
-                showDeleted: false,
-                singleEvents: true,
-                maxResults: 50,
-                orderBy: "startTime"
-            }).then(response => {
-                let events = response.result.items.map(event => ({
-                    title: event.summary,
-                    start: event.start.dateTime || event.start.date,
-                    end: event.end.dateTime || event.end.date
-                }));
-                successCallback(events);
-            }).catch(error => {
-                console.error("❌ Google Calendar API 오류:", error);
-                failureCallback(error);
-            });
-        }
-
-        window.onload = function () {
-            console.log("🔄 페이지 로드 완료, gapi 로드 시작");
-            loadGapi();
-        };
+            authorizeButton.onclick = handleAuthClick;
+            signoutButton.onclick = handleSignoutClick;
+        });
     </script>
+
+    <!-- ✅ gapi 스크립트를 마지막에 로드 -->
+    <script async defer src="https://apis.google.com/js/api.js" onload="loadGapi()"></script>
 </body>
 </html>
