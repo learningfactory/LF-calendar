@@ -3,101 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Calendar OAuth 연동</title>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script> <!-- Google OAuth -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <title>Google Calendar 안전 연동</title>
 </head>
 <body>
     <h2>📅 내 캘린더</h2>
-    <button id="authorize_button">Google 로그인</button>
-    <button id="signout_button" style="display:none;">로그아웃</button>
-    <div id="calendar"></div>
 
-    <!-- ✅ Google Calendar을 iframe으로 표시 -->
     <iframe 
-        src="https://calendar.google.com/calendar/embed?src=your_calendar_id&ctz=Asia%2FSeoul" 
+        src="https://calendar.google.com/calendar/embed?src=fjsldvorxhfl@gmail.com&ctz=Asia%2FSeoul" 
         width="800" 
         height="600" 
         style="border: 1px solid #ccc;"
         sandbox="allow-scripts">
     </iframe>
 
-    <script>
-        let CLIENT_ID = "236715550382-tq8n97cch62bo3jcvuflmij6rj3ab0qp.apps.googleusercontent.com"; // Google Cloud에서 발급받은 OAuth 클라이언트 ID
-        let API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM"; // API 키
-        let SCOPES = "https://www.googleapis.com/auth/calendar.readonly"; // 읽기 권한
-
-        document.addEventListener('DOMContentLoaded', function() {
-            let calendarEl = document.getElementById('calendar');
-            let authorizeButton = document.getElementById("authorize_button");
-            let signoutButton = document.getElementById("signout_button");
-
-            function handleAuthClick() {
-                gapi.auth.authorize(
-                    {
-                        client_id: CLIENT_ID,
-                        scope: SCOPES,
-                        immediate: false
-                    },
-                    updateSigninStatus
-                );
-            }
-
-            function handleSignoutClick() {
-                gapi.auth.signOut();
-                updateSigninStatus(false);
-            }
-
-            function updateSigninStatus(authResult) {
-                if (authResult && !authResult.error) {
-                    authorizeButton.style.display = "none";
-                    signoutButton.style.display = "block";
-                    loadCalendar();
-                } else {
-                    authorizeButton.style.display = "block";
-                    signoutButton.style.display = "none";
-                }
-            }
-
-            function loadCalendar() {
-                let calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'timeGridWeek',
-                    slotMinTime: '09:00:00',
-                    slotMaxTime: '18:00:00',
-                    googleCalendarApiKey: API_KEY,
-                    events: {
-                        googleCalendarId: "primary" // 기본 캘린더 사용
-                    }
-                });
-                calendar.render();
-            }
-
-            // ✅ gapi 로드 후 실행되도록 변경
-            function loadGapi() {
-                gapi.load("client", () => {
-                    gapi.client.setApiKey(API_KEY);
-                    gapi.auth.init(() => {
-                        updateSigninStatus(gapi.auth.getToken());
-                    });
-                });
-            }
-
-            window.onload = function() {
-                if (typeof gapi !== "undefined") {
-                    loadGapi();
-                } else {
-                    console.error("Google API 스크립트가 로드되지 않았습니다.");
-                }
-            };
-
-            authorizeButton.onclick = handleAuthClick;
-            signoutButton.onclick = handleSignoutClick;
-        });
-    </script>
-
-    <!-- ✅ gapi 스크립트를 마지막에 로드 -->
-    <script async defer src="https://apis.google.com/js/api.js" onload="loadGapi()"></script>
+    <p>Google 캘린더가 표시되지 않나요? <a href="https://calendar.google.com/calendar/u/0/r" target="_blank">여기에서 확인</a></p>
 </body>
 </html>
