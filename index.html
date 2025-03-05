@@ -15,52 +15,67 @@
     <div id="calendar"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             let calendarEl = document.getElementById('calendar');
+            const API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM";
 
-            let calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridDay', // 주간 뷰
-                slotMinTime: '09:00:00',  // 오전 9시부터 표시
-                slotMaxTime: '23:00:00',  // 오후 6시까지
-                
-                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM", // 🔹 API 키 입력
-                
-                eventSources: [
-                    {
-                        googleCalendarId: "learningfactory01@gmail.com",
-                        color: "#4285F4"
-                    },
-                    {
-                        googleCalendarId: "learningfactory11@gmail.com",
-                        color: "#34A853"
-                    },
-                    {
-                        googleCalendarId: "learningfactory03@gmail.com",
-                        color: "#34A853"
-                    },
-                    {
-                        googleCalendarId: "learningfactory05@gmail.com",
-                        color: "#34A853"
-                    },
-                    {
-                        googleCalendarId: "learningfactory06@gmail.com",
-                        color: "#34A853"
-                    },
-                    {
-                        googleCalendarId: "learningfactory10@gmail.com",
-                        color: "#34A853"
-                    },
-                    {
-                        events: [
-                            { title: '테스트 이벤트', start: '2025-03-10T10:00:00' }, // ✅ 로컬 이벤트 추가
-                            { title: '회의', start: '2025-03-11T14:00:00' }
-                        ],
-                        color: "#FF5733" // 로컬 이벤트 색상
+            const calendars = [
+                { id: "learningfactory01@gmail.com", name: "캘린더 01", color: "#4285F4" },
+                { id: "learningfactory11@gmail.com", name: "캘린더 11", color: "#34A853" },
+                { id: "learningfactory03@gmail.com", name: "캘린더 03", color: "#FF5733" },
+                { id: "learningfactory05@gmail.com", name: "캘린더 05", color: "#FF33A1" },
+                { id: "learningfactory06@gmail.com", name: "캘린더 06", color: "#33FFF5" },
+                { id: "learningfactory10@gmail.com", name: "캘린더 10", color: "#F3FF33" }
+            ];
+
+            async function fetchEvents(calendarId, resourceId) {
+                const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?key=${API_KEY}`;
+
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
                     }
-                ]
-            });
+                    const data = await response.json();
+                    return data.items.map(event => ({
+                        title: event.summary,
+                        start: event.start.dateTime || event.start.date,
+                        end: event.end.dateTime || event.end.date,
+                        resourceId: resourceId,
+                        color: calendars.find(c => c.id === calendarId)?.color || "#888"
+                    }));
+                } catch (error) {
+                    console.error(`Failed to fetch events for ${calendarId}:`, error);
+                    return [];
+                }
+            }
 
-            calendar.render();
+            async function loadEvents() {
+                let events = [];
+                for (let i = 0; i < calendars.length; i++) {
+                    let calendarEvents = await fetchEvents(calendars[i].id, calendars[i].id);
+                    events = events.concat(calendarEvents);
+                }
+
+                // ✅ 로컬 이벤트 추가
+                events.push({ title: '테스트 이벤트', start: '2025-03-10T10:00:00', resourceId: "local", color: "#FF5733" });
+                events.push({ title: '회의', start: '2025-03-11T14:00:00', resourceId: "local", color: "#FF5733" });
+
+                let calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'resourceTimeGridDay', // ✅ 각 계정별 칼럼 구분
+                    slotMinTime: '09:00:00',
+                    slotMaxTime: '23:00:00',
+                    resources: [
+                        ...calendars.map(cal => ({ id: cal.id, title: cal.name })),
+                        { id: "local", title: "로컬 이벤트" }
+                    ],
+                    events: events
+                });
+
+                calendar.render();
+            }
+
+            loadEvents();
         });
     </script>
 </body>
