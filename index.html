@@ -16,7 +16,7 @@
     <div id="calendar"></div>
 
     <script>
-        let CLIENT_ID = "YOUR_CLIENT_ID"; // Google Cloud에서 발급받은 OAuth 클라이언트 ID
+        let CLIENT_ID = "236715550382-tq8n97cch62bo3jcvuflmij6rj3ab0qp.apps.googleusercontent.com"; // Google Cloud에서 발급받은 OAuth 클라이언트 ID
         let API_KEY = "YOUR_API_KEY"; // API 키 (필요하면 추가)
         let SCOPES = "https://www.googleapis.com/auth/calendar.readonly"; // 읽기 전용 권한
 
@@ -65,7 +65,7 @@
                     slotMaxTime: '18:00:00',
                     events: {
                         googleCalendarId: "fjsldvorxhfl@gmail.com",
-                        googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM"
+                        googleCalendarApiKey: API_KEY
                     }
                 });
                 calendar.render();
