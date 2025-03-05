@@ -17,8 +17,8 @@
 
     <script>
         let CLIENT_ID = "236715550382-tq8n97cch62bo3jcvuflmij6rj3ab0qp.apps.googleusercontent.com"; // Google Cloud에서 발급받은 OAuth 클라이언트 ID
-        let API_KEY = "YOUR_API_KEY"; // API 키 (필요하면 추가)
-        let SCOPES = "https://www.googleapis.com/auth/calendar.readonly"; // 읽기 전용 권한
+        let API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM"; // API 키
+        let SCOPES = "https://www.googleapis.com/auth/calendar.readonly"; // 읽기 권한
 
         document.addEventListener('DOMContentLoaded', function() {
             let calendarEl = document.getElementById('calendar');
@@ -64,12 +64,13 @@
                     slotMinTime: '09:00:00',
                     slotMaxTime: '18:00:00',
                     events: {
-                        googleCalendarId: "fjsldvorxhfl@gmail.com",
+                        googleCalendarId: "primary", // 기본 캘린더 사용
                         googleCalendarApiKey: API_KEY
                     }
                 });
                 calendar.render();
             }
+
             // ✅ gapi 로드 후 실행되도록 변경
             function loadGapi() {
                 gapi.load("client:auth2", initClient);
