@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Calendar 연동</title>
     
-    <!-- FullCalendar 라이브러리 -->
+    <!-- FullCalendar 라이브러리 & 플러그인 추가 -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timegrid@5.11.3/main.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
 </head>
 <body>
@@ -62,6 +64,7 @@
                 events.push({ title: '회의', start: '2025-03-11T14:00:00', resourceId: "local", color: "#FF5733" });
 
                 let calendar = new FullCalendar.Calendar(calendarEl, {
+                    plugins: ['resourceTimeGrid'],  // ✅ 플러그인 추가
                     initialView: 'resourceTimeGridDay', // ✅ 각 계정별 칼럼 구분
                     slotMinTime: '09:00:00',
                     slotMaxTime: '23:00:00',
