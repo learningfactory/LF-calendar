@@ -22,23 +22,16 @@
 
         let authorizeButton, signoutButton, calendarEl, calendar;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            calendarEl = document.getElementById('calendar');
-            authorizeButton = document.getElementById("authorize_button");
-            signoutButton = document.getElementById("signout_button");
-
-            authorizeButton.onclick = handleAuthClick;
-            signoutButton.onclick = handleSignoutClick;
-
-            loadGapi();
-        });
-
         function loadGapi() {
+            console.log("🔄 gapi 스크립트 로드 중...");
             let script = document.createElement("script");
             script.src = "https://apis.google.com/js/api.js";
             script.async = true;
             script.defer = true;
-            script.onload = () => gapi.load("client:auth2", initClient);
+            script.onload = function () {
+                console.log("✅ gapi 스크립트 로드 완료!");
+                gapi.load("client:auth2", initClient);
+            };
             document.body.appendChild(script);
         }
 
@@ -49,9 +42,10 @@
                 discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
                 scope: SCOPES
             }).then(() => {
+                console.log("✅ Google API 클라이언트 초기화 완료");
                 gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
                 updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-            }).catch(error => console.error("gapi.client.init 오류:", error));
+            }).catch(error => console.error("❌ gapi.client.init 오류:", error));
         }
 
         function handleAuthClick() {
@@ -75,14 +69,14 @@
 
         function loadCalendar() {
             if (calendar) {
-                calendar.destroy(); // 기존 달력 제거
+                calendar.destroy();
             }
 
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
                 slotMinTime: '09:00:00',
                 slotMaxTime: '18:00:00',
-                events: fetchGoogleCalendarEvents // API에서 직접 일정 가져오기
+                events: fetchGoogleCalendarEvents
             });
 
             calendar.render();
@@ -90,7 +84,7 @@
 
         function fetchGoogleCalendarEvents(info, successCallback, failureCallback) {
             gapi.client.calendar.events.list({
-                calendarId: "primary", // 기본 캘린더
+                calendarId: "primary",
                 timeMin: (new Date()).toISOString(),
                 showDeleted: false,
                 singleEvents: true,
@@ -99,15 +93,20 @@
             }).then(response => {
                 let events = response.result.items.map(event => ({
                     title: event.summary,
-                    start: event.start.dateTime || event.start.date, // 날짜 또는 날짜/시간 처리
+                    start: event.start.dateTime || event.start.date,
                     end: event.end.dateTime || event.end.date
                 }));
                 successCallback(events);
             }).catch(error => {
-                console.error("Google Calendar API 오류:", error);
+                console.error("❌ Google Calendar API 오류:", error);
                 failureCallback(error);
             });
         }
+
+        window.onload = function () {
+            console.log("🔄 페이지 로드 완료, gapi 로드 시작");
+            loadGapi();
+        };
     </script>
 </body>
 </html>
