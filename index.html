@@ -10,14 +10,41 @@
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .calendar-container { display: flex; }
+        .filter-panel {
+            width: 200px; padding: 10px;
+            border-right: 1px solid #ccc;
+        }
+        .filter-panel label {
+            display: flex; align-items: center;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .filter-panel input {
+            margin-right: 5px;
+        }
+        #calendar { flex: 1; padding: 10px; }
+    </style>
 </head>
 <body>
     <h2>📅 내 캘린더</h2>
-    <div id="calendar"></div>
+    
+    <div class="calendar-container">
+        <!-- ✅ 캘린더 필터링 체크박스 -->
+        <div class="filter-panel">
+            <h3>📌 필터</h3>
+            <div id="calendar-filters"></div>
+        </div>
+
+        <div id="calendar"></div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
             let calendarEl = document.getElementById('calendar');
+            let filterPanel = document.getElementById('calendar-filters');
             const API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM";
 
             const calendars = [
@@ -31,12 +58,9 @@
 
             async function fetchEvents(calendarId, color) {
                 const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?key=${API_KEY}`;
-
                 try {
                     const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
                     const data = await response.json();
                     return data.items.map(event => ({
                         title: event.summary,
@@ -44,7 +68,7 @@
                         end: event.end.dateTime || event.end.date,
                         backgroundColor: color,  // ✅ 색상 구분
                         borderColor: color,
-                        groupId: calendarId  // ✅ 그룹 ID 설정
+                        extendedProps: { calendarId }  // ✅ 필터링을 위한 추가 데이터
                     }));
                 } catch (error) {
                     console.error(`Failed to fetch events for ${calendarId}:`, error);
@@ -60,8 +84,8 @@
                 }
 
                 // ✅ 로컬 이벤트 추가
-                events.push({ title: '테스트 이벤트', start: '2025-03-10T10:00:00', backgroundColor: "#FF5733", borderColor: "#FF5733", groupId: "local" });
-                events.push({ title: '회의', start: '2025-03-11T14:00:00', backgroundColor: "#FF5733", borderColor: "#FF5733", groupId: "local" });
+                events.push({ title: '테스트 이벤트', start: '2025-03-10T10:00:00', backgroundColor: "#FF5733", borderColor: "#FF5733", extendedProps: { calendarId: "local" } });
+                events.push({ title: '회의', start: '2025-03-11T14:00:00', backgroundColor: "#FF5733", borderColor: "#FF5733", extendedProps: { calendarId: "local" } });
 
                 let calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'timeGridDay', // ✅ 하루 단위로 보기
@@ -71,6 +95,31 @@
                 });
 
                 calendar.render();
+
+                // ✅ 체크박스로 필터링 기능 추가
+                calendars.forEach(cal => {
+                    let label = document.createElement("label");
+                    let input = document.createElement("input");
+                    input.type = "checkbox";
+                    input.checked = true;
+                    input.dataset.calendarId = cal.id;
+                    input.addEventListener("change", function () {
+                        let checkedCalendars = Array.from(filterPanel.querySelectorAll("input:checked"))
+                            .map(input => input.dataset.calendarId);
+
+                        calendar.getEvents().forEach(event => {
+                            if (checkedCalendars.includes(event.extendedProps.calendarId)) {
+                                event.setProp("display", "auto");
+                            } else {
+                                event.setProp("display", "none");
+                            }
+                        });
+                    });
+
+                    label.appendChild(input);
+                    label.appendChild(document.createTextNode(cal.name));
+                    filterPanel.appendChild(label);
+                });
             }
 
             loadEvents();
