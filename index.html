@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Calendar 연동</title>
     
-    <!-- FullCalendar 라이브러리 & 플러그인 추가 -->
+    <!-- FullCalendar 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timegrid@5.11.3/main.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
-
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
 </head>
 <body>
@@ -30,7 +29,7 @@
                 { id: "learningfactory10@gmail.com", name: "캘린더 10", color: "#F3FF33" }
             ];
 
-            async function fetchEvents(calendarId, resourceId) {
+            async function fetchEvents(calendarId, color) {
                 const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?key=${API_KEY}`;
 
                 try {
@@ -43,8 +42,9 @@
                         title: event.summary,
                         start: event.start.dateTime || event.start.date,
                         end: event.end.dateTime || event.end.date,
-                        resourceId: resourceId,
-                        color: calendars.find(c => c.id === calendarId)?.color || "#888"
+                        backgroundColor: color,  // ✅ 색상 구분
+                        borderColor: color,
+                        groupId: calendarId  // ✅ 그룹 ID 설정
                     }));
                 } catch (error) {
                     console.error(`Failed to fetch events for ${calendarId}:`, error);
@@ -54,24 +54,19 @@
 
             async function loadEvents() {
                 let events = [];
-                for (let i = 0; i < calendars.length; i++) {
-                    let calendarEvents = await fetchEvents(calendars[i].id, calendars[i].id);
+                for (let cal of calendars) {
+                    let calendarEvents = await fetchEvents(cal.id, cal.color);
                     events = events.concat(calendarEvents);
                 }
 
                 // ✅ 로컬 이벤트 추가
-                events.push({ title: '테스트 이벤트', start: '2025-03-10T10:00:00', resourceId: "local", color: "#FF5733" });
-                events.push({ title: '회의', start: '2025-03-11T14:00:00', resourceId: "local", color: "#FF5733" });
+                events.push({ title: '테스트 이벤트', start: '2025-03-10T10:00:00', backgroundColor: "#FF5733", borderColor: "#FF5733", groupId: "local" });
+                events.push({ title: '회의', start: '2025-03-11T14:00:00', backgroundColor: "#FF5733", borderColor: "#FF5733", groupId: "local" });
 
                 let calendar = new FullCalendar.Calendar(calendarEl, {
-                    plugins: ['resourceTimeGrid'],  // ✅ 플러그인 추가
-                    initialView: 'resourceTimeGridDay', // ✅ 각 계정별 칼럼 구분
+                    initialView: 'timeGridDay', // ✅ 하루 단위로 보기
                     slotMinTime: '09:00:00',
                     slotMaxTime: '23:00:00',
-                    resources: [
-                        ...calendars.map(cal => ({ id: cal.id, title: cal.name })),
-                        { id: "local", title: "로컬 이벤트" }
-                    ],
                     events: events
                 });
 
