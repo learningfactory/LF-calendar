@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
-
 </head>
 <body>
     <h2>📅 내 캘린더</h2>
@@ -26,10 +25,22 @@
                 
                 googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM", // 🔹 API 키 입력
                 
-                events: [
-                    { title: '테스트 이벤트', start: '2025-03-10T10:00:00' }, // ✅ 테스트용 이벤트 추가
-                    { googleCalendarId: "fjsldvorxhfl@gmail.com", color: "#4285F4" },  // 이메일 형식 캘린더
-                    { googleCalendarId: "learningfactory01@gmail.com", color: "#34A853" },  // 다른 계정의 캘린더
+                eventSources: [
+                    {
+                        googleCalendarId: "fjsldvorxhfl@gmail.com",
+                        color: "#4285F4"
+                    },
+                    {
+                        googleCalendarId: "learningfactory01@gmail.com",
+                        color: "#34A853"
+                    },
+                    {
+                        events: [
+                            { title: '테스트 이벤트', start: '2024-03-10T10:00:00' }, // ✅ 로컬 이벤트 추가
+                            { title: '회의', start: '2024-03-11T14:00:00' }
+                        ],
+                        color: "#FF5733" // 로컬 이벤트 색상
+                    }
                 ]
             });
 
