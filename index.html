@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Calendar 연동</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
 </head>
 <body>
+    <h2>📅 내 캘린더</h2>
     <div id="calendar"></div>
 
     <script>
@@ -16,10 +18,10 @@
             let calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek', // 주간 뷰
                 slotMinTime: '09:00:00',  // 오전 9시부터 표시
-                slotMaxTime: '18:00:00',  // 오후 6시까지 (선택 사항)
-                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM", // 여기 API 키 입력
+                slotMaxTime: '18:00:00',  // 오후 6시까지
+                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM", // 🔹 API 키 (보안 설정 필수!)
                 events: {
-                    googleCalendarId: "fjsldvorxhfl@gmail.com" // 여기 캘린더 ID 입력
+                    googleCalendarId: "abcd1234@group.calendar.google.com" // 🔹 올바른 캘린더 ID 입력
                 }
             });
             calendar.render();
