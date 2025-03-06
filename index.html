@@ -12,7 +12,6 @@
     <style>
         .calendar-container {
             display: flex;
-            gap: 10px;
             overflow-x: auto;
             padding: 10px;
             background-color: white; /* 배경 흰색 설정 */
@@ -32,6 +31,7 @@
             height: 1200px; /* 충분한 높이 설정 */
             padding: 5px;
             background-color: white; /* 배경 흰색 설정 */
+            border: none; /* 칼럼 테두리 제거 */
         }
         .main-date {
             text-align: center;
@@ -43,7 +43,13 @@
             display: none; /* 요일 헤더 제거 */
         }
         .fc-timegrid-slot { 
-            border-top: none !important; /* 30분 단위 점선 제거 */
+            border-top: 1px solid #ccc !important; /* 30분 단위 점선 삭제, 회색 선으로 변경 */
+        }
+        .fc-timegrid-axis { 
+            display: none; /* 기본적으로 모든 시간 축 숨김 */
+        }
+        .calendar-box:first-child .fc-timegrid-axis { 
+            display: block !important; /* 첫 번째 칼럼의 시간 축만 표시 */
         }
     </style>
 </head>
@@ -94,7 +100,7 @@
             let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('main-date').innerText = today.toLocaleDateString('ko-KR', options);
 
-            calendars.forEach((cal) => {
+            calendars.forEach((cal, index) => {
                 let calendarEl = document.getElementById(cal.element);
                 let calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'timeGridDay', // 일간 뷰
@@ -106,7 +112,8 @@
                     expandRows: true, // 📌 전체 높이 확장하여 스크롤 방지
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
-                    headerToolbar: false // ⛔ 각 캘린더의 날짜/요일 헤더 제거
+                    headerToolbar: false, // ⛔ 각 캘린더의 날짜/요일 헤더 제거
+                    slotLabel: index === 0 // 첫 번째 칼럼에만 시간 표시
                 });
                 calendar.render();
             });
