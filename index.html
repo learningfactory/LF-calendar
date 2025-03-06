@@ -42,10 +42,9 @@
         }
         .main-date {
             text-align: left;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: bold;
             margin-bottom: 10px;
-            display: block;
         }
         .date-controls {
             text-align: center;
@@ -71,10 +70,10 @@
 <body>
     <h2>📅 3D printer schedules </h2>
     <div class="date-controls">
-        <button onclick="changeDate(-1)">◀ 이전</button>
-        <button onclick="goToToday()">오늘</button>
         <span class="main-date" id="main-date"></span>
-        <button onclick="changeDate(1)">다음 ▶</button>
+        <button onclick="changeDate(-1)">◀ Prev.</button>
+        <button onclick="goToToday()">Today</button>
+        <button onclick="changeDate(1)">Next ▶</button>
     </div>
     
     <div class="calendar-container">
