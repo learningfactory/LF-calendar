@@ -31,14 +31,14 @@
             width: 100%; /* 부모 요소 전체 너비 사용 */
         }
         .calendar {
-            width: 150px; /* 개별 캘린더의 너비 */
+            width: 125px; /* 개별 캘린더의 너비 */
             height: 1200px; /* 충분한 높이 설정 */
             padding: 0px;
             background-color: white; /* 배경 흰색 설정 */
             border: none; /* 칼럼 테두리 제거 */
         }
         .calendar-box:first-child .calendar {
-            width: 200px; /* 첫 번째 캘린더만 너비 조정 */
+            width: 175px; /* 첫 번째 캘린더만 너비 조정 */
         }
         .main-date {
             text-align: left;
@@ -73,8 +73,8 @@
 </head>
 <body>
     <h2>📅 3D printer schedules </h2>
-    <div class="date-controls">
-        <span class="main-date" id="main-date"></span>
+    <span class="main-date" id="main-date"></span>
+    <div class="date-controls">        
         <button onclick="changeDate(-1)">◀ Prev.</button>
         <button onclick="goToToday()">Today</button>
         <button onclick="changeDate(1)">Next ▶</button>
@@ -82,35 +82,35 @@
     
     <div class="calendar-container">
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.01</h3>
+            <h3 class="calendar-title">No.01</h3>
             <div id="calendar1" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.02</h3>
+            <h3 class="calendar-title">No.02</h3>
             <div id="calendar2" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.03</h3>
+            <h3 class="calendar-title">No.03</h3>
             <div id="calendar3" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.04</h3>
+            <h3 class="calendar-title">No.04</h3>
             <div id="calendar4" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.05</h3>
+            <h3 class="calendar-title">No.05</h3>
             <div id="calendar5" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.06</h3>
+            <h3 class="calendar-title">No.06</h3>
             <div id="calendar6" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.07</h3>
+            <h3 class="calendar-title">No.07</h3>
             <div id="calendar7" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.08</h3>
+            <h3 class="calendar-title">No.08</h3>
             <div id="calendar8" class="calendar"></div>
         </div>
     </div>
