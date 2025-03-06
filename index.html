@@ -28,7 +28,7 @@
             margin-bottom: 5px;
         }
         .calendar {
-            width: 300px; /* 개별 캘린더의 너비 */
+            width: 150px; /* 개별 캘린더의 너비 */
             height: 1200px; /* 충분한 높이 설정 */
             padding: 0px;
             background-color: white; /* 배경 흰색 설정 */
@@ -68,6 +68,7 @@
     <h2>📅 3D printer schedules </h2>
     <div class="date-controls">
         <button onclick="changeDate(-1)">◀ 이전</button>
+        <button onclick="goToToday()">오늘</button>
         <span class="main-date" id="main-date"></span>
         <button onclick="changeDate(1)">다음 ▶</button>
     </div>
@@ -115,6 +116,11 @@
         }
         function changeDate(days) {
             currentDate.setDate(currentDate.getDate() + days);
+            updateMainDate();
+            calendars.forEach(cal => cal.gotoDate(currentDate));
+        }
+        function goToToday() {
+            currentDate = new Date();
             updateMainDate();
             calendars.forEach(cal => cal.gotoDate(currentDate));
         }
