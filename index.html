@@ -15,6 +15,7 @@
             overflow-x: auto;
             padding: 10px;
             background-color: white; /* 배경 흰색 설정 */
+            gap: 0; /* 칼럼 사이 간격 제거 */
         }
         .calendar-box {
             display: flex;
@@ -43,13 +44,16 @@
             display: none; /* 요일 헤더 제거 */
         }
         .fc-timegrid-slot { 
-            border-top: 1px solid #ccc !important; /* 30분 단위 점선 삭제, 회색 선으로 변경 */
+            border-top: none !important; /* 30분 단위 점선 삭제 */
         }
         .fc-timegrid-axis { 
             display: none; /* 기본적으로 모든 시간 축 숨김 */
         }
         .calendar-box:first-child .fc-timegrid-axis { 
             display: block !important; /* 첫 번째 칼럼의 시간 축만 표시 */
+        }
+        .fc-timegrid-slot.fc-timegrid-slot-lane {
+            border-top: 1px solid #ccc !important; /* 각 시각의 선을 회색으로 설정 */
         }
     </style>
 </head>
@@ -71,15 +75,15 @@
             <div id="calendar3" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.04</h3>
+            <h3 class="calendar-title">Printer No.05</h3>
             <div id="calendar4" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.05</h3>
+            <h3 class="calendar-title">Printer No.06</h3>
             <div id="calendar5" class="calendar"></div>
         </div>
         <div class="calendar-box">
-            <h3 class="calendar-title">Printer No.06</h3>
+            <h3 class="calendar-title">Printer No.07</h3>
             <div id="calendar6" class="calendar"></div>
         </div>
     </div>
