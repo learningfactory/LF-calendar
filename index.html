@@ -12,17 +12,16 @@
     <style>
         .calendar-container {
             display: flex;
-            justify-content: center; /* 중앙 정렬 */
             overflow-x: auto;
             padding: 10px;
             background-color: white; /* 배경 흰색 설정 */
-            gap: 10px; /* 칼럼 사이 간격 제거 */
+            gap: 0; /* 칼럼 사이 간격 제거 */
             white-space: nowrap; /* 캘린더들이 한 줄로 유지되도록 설정 */
         }
         .calendar-box {
-            flex: 0 0 auto; /* 고정된 너비 유지 */
-            min-width: 320px; /* 최소 너비 설정 */
-            text-align: center;
+            display: inline-block; /* 인라인 블록 요소로 변경하여 가로 정렬 */
+            flex-direction: column;
+            align-items: center;
         }
         .calendar-title {
             font-size: 16px;
