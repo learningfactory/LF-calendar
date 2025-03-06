@@ -8,7 +8,9 @@
     <!-- FullCalendar 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timeline@5.11.3/main.global.min.js"></script> <!-- 🔹 리소스 타임라인 추가 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fullcalendar/resource-timeline@5.11.3/main.min.css"> <!-- 🔹 추가 -->
 </head>
 <body>
     <h2>📅 계정별 일정</h2>
@@ -33,10 +35,12 @@
                 slotMinTime: '09:00:00',
                 slotMaxTime: '23:00:00',
                 googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
-
+                
+                plugins: ['resourceTimeline'], // 🔹 리소스 타임라인 플러그인 추가
+                
                 resources: calendars.map(cal => ({ id: cal.id, title: cal.name })), // 🔹 계정을 리소스로 추가
 
-                events: calendars.map(cal => ({
+                eventSources: calendars.map(cal => ({
                     googleCalendarId: cal.id,
                     color: cal.color,
                     resourceId: cal.id // 🔹 리소스(칼럼)와 연결
