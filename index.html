@@ -50,20 +50,14 @@
         .fc-timegrid-axis { 
             display: none !important; /* 모든 시간 축 숨김 */
         }
-        .calendar-box:first-child .fc-timegrid-axis { 
-            display: block !important; /* 첫 번째 칼럼 왼쪽에 시간 축 표시 */
-        }
-        .fc-timegrid-slot { 
-            border-top: none !important; /* 30분 단위 점선 삭제 */
-        }
         .fc-timegrid-slot-label {
             display: none !important; /* 시간 라벨 숨김 */
         }
-        .fc-timegrid-slot.fc-timegrid-slot-lane:nth-child(odd) {
-            border-top: 1px solid #ccc !important; /* 1시간 간격으로 보조 선 설정 */
-        }
         .fc-day-today {
             background: none !important; /* 오늘 날짜 하이라이트 제거 */
+        }
+        .calendar-box:first-child .fc-timegrid-slot-label { 
+            display: block !important; /* 첫 번째 칼럼 왼쪽에 시간 축 표시 */
         }
     </style>
 </head>
