@@ -14,10 +14,24 @@
             display: flex;
             gap: 10px;
             overflow-x: auto;
+            padding: 10px;
+        }
+        .calendar-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .calendar-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
         .calendar {
             width: 300px; /* 개별 캘린더의 너비 */
             height: 500px; /* 개별 캘린더의 높이 */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
         }
     </style>
 </head>
@@ -25,12 +39,30 @@
     <h2>📅 계정별 일정</h2>
     
     <div class="calendar-container">
-        <div id="calendar1" class="calendar"></div>
-        <div id="calendar2" class="calendar"></div>
-        <div id="calendar3" class="calendar"></div>
-        <div id="calendar4" class="calendar"></div>
-        <div id="calendar5" class="calendar"></div>
-        <div id="calendar6" class="calendar"></div>
+        <div class="calendar-box">
+            <h3 class="calendar-title">No.01</h3>
+            <div id="calendar1" class="calendar"></div>
+        </div>
+        <div class="calendar-box">
+            <h3 class="calendar-title">No.02</h3>
+            <div id="calendar2" class="calendar"></div>
+        </div>
+        <div class="calendar-box">
+            <h3 class="calendar-title">No.03</h3>
+            <div id="calendar3" class="calendar"></div>
+        </div>
+        <div class="calendar-box">
+            <h3 class="calendar-title">No.05</h3>
+            <div id="calendar4" class="calendar"></div>
+        </div>
+        <div class="calendar-box">
+            <h3 class="calendar-title">No.06</h3>
+            <div id="calendar5" class="calendar"></div>
+        </div>
+        <div class="calendar-box">
+            <h3 class="calendar-title">No.07</h3>
+            <div id="calendar6" class="calendar"></div>
+        </div>
     </div>
 
     <script>
@@ -44,13 +76,14 @@
                 { id: "learningfactory10@gmail.com", element: "calendar6", color: "#F3FF33" }
             ];
 
-            calendars.forEach(cal => {
+            calendars.forEach((cal, index) => {
                 let calendarEl = document.getElementById(cal.element);
                 let calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'timeGridWeek', // 주간 뷰
+                    initialView: 'timeGridDay', // 일간 뷰
                     timeZone: 'Asia/Seoul',
                     slotMinTime: '09:00:00',
                     slotMaxTime: '23:00:00',
+                    allDaySlot: false, // ⛔ "all-day" 숨기기
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
                     headerToolbar: { left: '', center: 'title', right: '' } // 캘린더별 개별 헤더 제거
