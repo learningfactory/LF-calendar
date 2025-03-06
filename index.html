@@ -32,12 +32,10 @@
     <h2>📅 내 캘린더</h2>
     
     <div class="calendar-container">
-        <!-- ✅ 캘린더 필터링 체크박스 -->
         <div class="filter-panel">
             <h3>📌 필터</h3>
             <div id="calendar-filters"></div>
         </div>
-
         <div id="calendar"></div>
     </div>
 
@@ -45,8 +43,9 @@
         document.addEventListener('DOMContentLoaded', async function() {
             let calendarEl = document.getElementById('calendar');
             let filterPanel = document.getElementById('calendar-filters');
-            const API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM";
+            const API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM"; // ✅ 본인의 API 키 사용
 
+            // ✅ 이메일 주소를 캘린더 ID로 사용 (단, 캘린더를 공개로 설정해야 함)
             const calendars = [
                 { id: "learningfactory01@gmail.com", name: "캘린더 01", color: "#4285F4" },
                 { id: "learningfactory11@gmail.com", name: "캘린더 11", color: "#34A853" },
@@ -57,7 +56,9 @@
             ];
 
             async function fetchEvents(calendarId, color) {
-                const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?key=${API_KEY}`;
+                const encodedId = encodeURIComponent(calendarId); // ✅ 이메일 주소를 안전하게 변환
+                const url = `https://www.googleapis.com/calendar/v3/calendars/${encodedId}/events?key=${API_KEY}`;
+                
                 try {
                     const response = await fetch(url);
                     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -66,12 +67,12 @@
                         title: event.summary,
                         start: event.start.dateTime || event.start.date,
                         end: event.end.dateTime || event.end.date,
-                        backgroundColor: color,  // ✅ 색상 구분
+                        backgroundColor: color,
                         borderColor: color,
-                        extendedProps: { calendarId }  // ✅ 필터링을 위한 추가 데이터
+                        extendedProps: { calendarId }
                     }));
                 } catch (error) {
-                    console.error(`Failed to fetch events for ${calendarId}:`, error);
+                    console.error(`❌ ${calendarId}에서 일정 불러오기 실패:`, error);
                     return [];
                 }
             }
@@ -83,12 +84,11 @@
                     events = events.concat(calendarEvents);
                 }
 
-                // ✅ 로컬 이벤트 추가
+                // ✅ 테스트용 로컬 이벤트 추가
                 events.push({ title: '테스트 이벤트', start: '2025-03-10T10:00:00', backgroundColor: "#FF5733", borderColor: "#FF5733", extendedProps: { calendarId: "local" } });
-                events.push({ title: '회의', start: '2025-03-11T14:00:00', backgroundColor: "#FF5733", borderColor: "#FF5733", extendedProps: { calendarId: "local" } });
 
                 let calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'timeGridDay', // ✅ 하루 단위로 보기
+                    initialView: 'timeGridDay',
                     slotMinTime: '09:00:00',
                     slotMaxTime: '23:00:00',
                     events: events
@@ -96,7 +96,7 @@
 
                 calendar.render();
 
-                // ✅ 체크박스로 필터링 기능 추가
+                // ✅ 캘린더 필터링 체크박스 추가
                 calendars.forEach(cal => {
                     let label = document.createElement("label");
                     let input = document.createElement("input");
