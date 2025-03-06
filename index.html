@@ -37,9 +37,6 @@
             background-color: white; /* 배경 흰색 설정 */
             border: none; /* 칼럼 테두리 제거 */
         }
-        .calendar-box:first-child .calendar {
-            width: 175px; /* 첫 번째 캘린더만 너비 조정 */
-        }
         .main-date {
             text-align: left;
             font-size: 20px;
@@ -58,14 +55,17 @@
             display: none; /* 요일 헤더 제거 */
         }
         .fc-timegrid-slot-label {
+            font-size: 8px
             display: none !important; /* 시간 라벨 숨김 */
         }
         .fc-day-today {
             background: none !important; /* 오늘 날짜 하이라이트 제거 */
         }
         .calendar-box:first-child .fc-timegrid-slot-label { 
-            font-size: 8px
             display: block !important; /* 첫 번째 칼럼 왼쪽에 시간 축 표시 */
+        }
+        .calendar-box:first-child .calendar {
+            width: 175px; /* 첫 번째 캘린더만 너비 조정 */
         }
     </style>
 </head>
