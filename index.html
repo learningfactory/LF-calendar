@@ -30,7 +30,7 @@
         .calendar {
             width: 300px; /* 개별 캘린더의 너비 */
             height: 1200px; /* 충분한 높이 설정 */
-            padding: 5px;
+            padding: 0px;
             background-color: white; /* 배경 흰색 설정 */
             border: none; /* 칼럼 테두리 제거 */
         }
@@ -47,17 +47,17 @@
         .fc-col-header { 
             display: none; /* 요일 헤더 제거 */
         }
+        .fc-timegrid-axis { 
+            display: none !important; /* 모든 시간 축 숨김 */
+        }
+        .calendar-box:first-child .fc-timegrid-axis { 
+            display: block !important; /* 첫 번째 칼럼 왼쪽에 시간 축 표시 */
+        }
         .fc-timegrid-slot { 
             border-top: none !important; /* 30분 단위 점선 삭제 */
         }
-        .fc-timegrid-axis { 
-            display: none; /* 기본적으로 모든 시간 축 숨김 */
-        }
-        .calendar-box:first-child .fc-timegrid-axis { 
-            display: block !important; /* 첫 번째 칼럼의 시간 축만 표시 */
-        }
-        .fc-timegrid-slot.fc-timegrid-slot-lane {
-            border-top: 1px solid #ccc !important; /* 각 시각의 선을 회색으로 설정 */
+        .fc-timegrid-slot.fc-timegrid-slot-lane:nth-child(odd) {
+            border-top: 1px solid #ccc !important; /* 1시간 간격으로 보조 선 설정 */
         }
         .fc-day-today {
             background: none !important; /* 오늘 날짜 하이라이트 제거 */
@@ -97,6 +97,14 @@
             <h3 class="calendar-title">Printer No.06</h3>
             <div id="calendar6" class="calendar"></div>
         </div>
+        <div class="calendar-box">
+            <h3 class="calendar-title">Printer No.07</h3>
+            <div id="calendar7" class="calendar"></div>
+        </div>
+        <div class="calendar-box">
+            <h3 class="calendar-title">Printer No.08</h3>
+            <div id="calendar8" class="calendar"></div>
+        </div>
     </div>
 
     <script>
@@ -118,9 +126,11 @@
                 { id: "learningfactory01@gmail.com", element: "calendar1", color: "#34A853" },
                 { id: "learningfactory11@gmail.com", element: "calendar2", color: "#34A853" },
                 { id: "learningfactory03@gmail.com", element: "calendar3", color: "#34A853" },
-                { id: "learningfactory05@gmail.com", element: "calendar4", color: "#34A853" },
-                { id: "learningfactory06@gmail.com", element: "calendar5", color: "#34A853" },
-                { id: "learningfactory10@gmail.com", element: "calendar6", color: "#34A853" }
+                { id: "learningfactory13@gmail.com", element: "calendar4", color: "#34A853" },
+                { id: "learningfactory05@gmail.com", element: "calendar5", color: "#34A853" },
+                { id: "learningfactory06@gmail.com", element: "calendar6", color: "#34A853" },
+                { id: "learningfactory10@gmail.com", element: "calendar7", color: "#34A853" },
+                { id: "learningfactory08@gmail.com", element: "calendar8", color: "#34A853" }
             ];
 
             calendarData.forEach((cal, index) => {
@@ -136,7 +146,6 @@
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
                     headerToolbar: false, // ⛔ 각 캘린더의 날짜/요일 헤더 제거
-                    slotLabel: index === 0, // 첫 번째 칼럼에만 시간 표시
                     eventClick: function(info) {
                         info.jsEvent.preventDefault(); // 일정 클릭 시 링크 이동 방지
                     }
