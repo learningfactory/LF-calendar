@@ -4,51 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Calendar 연동</title>
-    
+
     <!-- FullCalendar 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
 </head>
 <body>
-    <h2>📅 내 캘린더</h2>
+    <h2>📅 계정별 일정</h2>
     <div id="calendar"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             let calendarEl = document.getElementById('calendar');
 
-            let calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridDay', // 일간 뷰
-                timeZone: 'Asia/Seoul',    // 한국 시간으로 설정
-                slotMinTime: '09:00:00',  // 오전 9시부터 표시
-                slotMaxTime: '23:00:00',  // 오후 11시까지
-                
-                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM", // 🔹 API 키 입력
-                
-                eventSources: [
-                    {
-                        googleCalendarId: "learningfactory01@gmail.com",
-                        color: "#4285F4"
-                    },
-                    {
-                        googleCalendarId: "learningfactory11@gmail.com",
-                        color: "#34A853"
-                    }, {
-                        googleCalendarId: "learningfactory03@gmail.com",
-                        color: "#4285F4"
-                    }, {
-                        googleCalendarId: "learningfactory05@gmail.com",
-                        color: "#4285F4"
-                    }, {
-                        googleCalendarId: "learningfactory06@gmail.com",
-                        color: "#4285F4"
-                    }, {
-                        googleCalendarId: "learningfactory10@gmail.com",
-                        color: "#4285F4"
-                    },
+            let calendars = [
+                { id: "learningfactory01@gmail.com", name: "캘린더 01", color: "#4285F4" },
+                { id: "learningfactory11@gmail.com", name: "캘린더 11", color: "#34A853" },
+                { id: "learningfactory03@gmail.com", name: "캘린더 03", color: "#FF5733" },
+                { id: "learningfactory05@gmail.com", name: "캘린더 05", color: "#FF33A1" },
+                { id: "learningfactory06@gmail.com", name: "캘린더 06", color: "#33FFF5" },
+                { id: "learningfactory10@gmail.com", name: "캘린더 10", color: "#F3FF33" }
+            ];
 
-                ]
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'resourceTimelineDay', // 🔹 계정별 칼럼을 나누는 뷰
+                timeZone: 'Asia/Seoul',
+                slotMinTime: '09:00:00',
+                slotMaxTime: '23:00:00',
+                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
+
+                resources: calendars.map(cal => ({ id: cal.id, title: cal.name })), // 🔹 계정을 리소스로 추가
+
+                events: calendars.map(cal => ({
+                    googleCalendarId: cal.id,
+                    color: cal.color,
+                    resourceId: cal.id // 🔹 리소스(칼럼)와 연결
+                }))
             });
 
             calendar.render();
