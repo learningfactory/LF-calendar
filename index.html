@@ -105,7 +105,7 @@
         function changeDate(days) {
             currentDate.setDate(currentDate.getDate() + days);
             updateMainDate();
-            calendars.forEach(cal => cal.refetchEvents());
+            calendars.forEach(cal => cal.gotoDate(currentDate));
         }
 
         document.addEventListener('DOMContentLoaded', function() {
