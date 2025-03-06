@@ -59,6 +59,9 @@
         .fc-timegrid-slot.fc-timegrid-slot-lane {
             border-top: 1px solid #ccc !important; /* 각 시각의 선을 회색으로 설정 */
         }
+        .fc-day-today {
+            background: none !important; /* 오늘 날짜 하이라이트 제거 */
+        }
     </style>
 </head>
 <body>
@@ -133,7 +136,10 @@
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
                     headerToolbar: false, // ⛔ 각 캘린더의 날짜/요일 헤더 제거
-                    slotLabel: index === 0 // 첫 번째 칼럼에만 시간 표시
+                    slotLabel: index === 0, // 첫 번째 칼럼에만 시간 표시
+                    eventClick: function(info) {
+                        info.jsEvent.preventDefault(); // 일정 클릭 시 링크 이동 방지
+                    }
                 });
                 calendar.render();
                 calendars.push(calendar);
