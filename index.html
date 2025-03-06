@@ -167,6 +167,11 @@
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
                     headerToolbar: false, // ⛔ 각 캘린더의 날짜/요일 헤더 제거
+                    eventTimeFormat: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    },
                     eventClick: function(info) {
                         info.jsEvent.preventDefault(); // 일정 클릭 시 링크 이동 방지
                     }
