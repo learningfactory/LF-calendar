@@ -12,6 +12,7 @@
     <style>
         .calendar-container {
             display: flex;
+            justify-content: center; /* 중앙 정렬 */
             overflow-x: auto;
             padding: 10px;
             background-color: white; /* 배경 흰색 설정 */
@@ -58,6 +59,9 @@
         }
         .calendar-box:first-child .fc-timegrid-slot-label { 
             display: block !important; /* 첫 번째 칼럼 왼쪽에 시간 축 표시 */
+        }
+        .calendar-box:first-child .calender { 
+            width: 200px;
         }
     </style>
 </head>
