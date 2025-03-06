@@ -8,121 +8,43 @@
     <!-- FullCalendar 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
-    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .calendar-container { display: flex; }
-        .filter-panel {
-            width: 200px; padding: 10px;
-            border-right: 1px solid #ccc;
-        }
-        .filter-panel label {
-            display: flex; align-items: center;
-            margin-bottom: 5px;
-            cursor: pointer;
-        }
-        .filter-panel input {
-            margin-right: 5px;
-        }
-        #calendar { flex: 1; padding: 10px; }
-    </style>
 </head>
 <body>
     <h2>📅 내 캘린더</h2>
-    
-    <div class="calendar-container">
-        <div class="filter-panel">
-            <h3>📌 필터</h3>
-            <div id="calendar-filters"></div>
-        </div>
-        <div id="calendar"></div>
-    </div>
+    <div id="calendar"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', function() {
             let calendarEl = document.getElementById('calendar');
-            let filterPanel = document.getElementById('calendar-filters');
-            const API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM"; // ✅ 본인의 API 키 사용
 
-            // ✅ 이메일 주소를 캘린더 ID로 사용 (단, 캘린더를 공개로 설정해야 함)
-            const calendars = [
-                { id: "learningfactory01@gmail.com", name: "캘린더 01", color: "#4285F4" },
-                { id: "learningfactory11@gmail.com", name: "캘린더 11", color: "#34A853" },
-                { id: "learningfactory03@gmail.com", name: "캘린더 03", color: "#FF5733" },
-                { id: "learningfactory05@gmail.com", name: "캘린더 05", color: "#FF33A1" },
-                { id: "learningfactory06@gmail.com", name: "캘린더 06", color: "#33FFF5" },
-                { id: "learningfactory10@gmail.com", name: "캘린더 10", color: "#F3FF33" }
-            ];
-
-            async function fetchEvents(calendarId, color) {
-                const encodedId = encodeURIComponent(calendarId); // ✅ 이메일 주소를 안전하게 변환
-                const url = `https://www.googleapis.com/calendar/v3/calendars/${encodedId}/events?key=${API_KEY}`;
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek', // 주간 뷰
+                slotMinTime: '09:00:00',  // 오전 9시부터 표시
+                slotMaxTime: '18:00:00',  // 오후 6시까지
                 
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                    const data = await response.json();
-                    return data.items.map(event => ({
-                        title: event.summary,
-                        start: event.start.dateTime || event.start.date,
-                        end: event.end.dateTime || event.end.date,
-                        backgroundColor: color,
-                        borderColor: color,
-                        extendedProps: { calendarId }
-                    }));
-                } catch (error) {
-                    console.error(`❌ ${calendarId}에서 일정 불러오기 실패:`, error);
-                    return [];
-                }
-            }
+                googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM", // 🔹 API 키 입력
+                
+                eventSources: [
+                    {
+                        googleCalendarId: "fjsldvorxhfl@gmail.com",
+                        color: "#4285F4"
+                    },
+                    {
+                        googleCalendarId: "learningfactory01@gmail.com",
+                        color: "#34A853"
+                    },
+                    {
+                        events: [
+                            { title: '테스트 이벤트', start: '2025-03-10T10:00:00' }, // ✅ 로컬 이벤트 추가
+                            { title: '회의', start: '2025-03-11T14:00:00' }
+                        ],
+                        color: "#FF5733" // 로컬 이벤트 색상
+                    }
+                ]
+            });
 
-            async function loadEvents() {
-                let events = [];
-                for (let cal of calendars) {
-                    let calendarEvents = await fetchEvents(cal.id, cal.color);
-                    events = events.concat(calendarEvents);
-                }
-
-                // ✅ 테스트용 로컬 이벤트 추가
-                events.push({ title: '테스트 이벤트', start: '2025-03-10T10:00:00', backgroundColor: "#FF5733", borderColor: "#FF5733", extendedProps: { calendarId: "local" } });
-
-                let calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'timeGridDay',
-                    slotMinTime: '09:00:00',
-                    slotMaxTime: '23:00:00',
-                    events: events
-                });
-
-                calendar.render();
-
-                // ✅ 캘린더 필터링 체크박스 추가
-                calendars.forEach(cal => {
-                    let label = document.createElement("label");
-                    let input = document.createElement("input");
-                    input.type = "checkbox";
-                    input.checked = true;
-                    input.dataset.calendarId = cal.id;
-                    input.addEventListener("change", function () {
-                        let checkedCalendars = Array.from(filterPanel.querySelectorAll("input:checked"))
-                            .map(input => input.dataset.calendarId);
-
-                        calendar.getEvents().forEach(event => {
-                            if (checkedCalendars.includes(event.extendedProps.calendarId)) {
-                                event.setProp("display", "auto");
-                            } else {
-                                event.setProp("display", "none");
-                            }
-                        });
-                    });
-
-                    label.appendChild(input);
-                    label.appendChild(document.createTextNode(cal.name));
-                    filterPanel.appendChild(label);
-                });
-            }
-
-            loadEvents();
+            calendar.render();
         });
     </script>
 </body>
