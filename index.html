@@ -15,6 +15,7 @@
             gap: 10px;
             overflow-x: auto;
             padding: 10px;
+            background-color: white; /* 배경 흰색 설정 */
         }
         .calendar-box {
             display: flex;
@@ -29,15 +30,20 @@
         .calendar {
             width: 300px; /* 개별 캘린더의 너비 */
             height: 1200px; /* 충분한 높이 설정 */
-            border: 1px solid #ddd;
-            border-radius: 5px;
             padding: 5px;
+            background-color: white; /* 배경 흰색 설정 */
         }
         .main-date {
             text-align: center;
             font-size: 20px;
             font-weight: bold;
             margin-bottom: 10px;
+        }
+        .fc-col-header { 
+            display: none; /* 요일 헤더 제거 */
+        }
+        .fc-timegrid-slot { 
+            border-top: none !important; /* 30분 단위 점선 제거 */
         }
     </style>
 </head>
@@ -103,8 +109,3 @@
                     headerToolbar: false // ⛔ 각 캘린더의 날짜/요일 헤더 제거
                 });
                 calendar.render();
-            });
-        });
-    </script>
-</body>
-</html>
