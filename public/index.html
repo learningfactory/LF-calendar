@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>비공개 캘린더 일정 보기</title>
+</head>
+<body>
+    <h2>내 비공개 일정</h2>
+    <ul id="events"></ul>
+
+    <script>
+      fetch("https://us-central1-lf-calendar.cloudfunctions.net/getCalendarEvents")
+        .then(response => response.json())
+        .then(events => {
+          const ul = document.getElementById("events");
+          if(events.length === 0) {
+            ul.innerHTML = "<li>일정이 없습니다.</li>";
+          } else {
+            events.forEach(event => {
+              const start = event.start.dateTime || event.start.date; // 시간 or 날짜
+              const li = document.createElement("li");
+              li.textContent = `${start} - ${event.summary}`;
+              ul.appendChild(li);
+            });
+          }
+        })
+        .catch(error => {
+          console.error("일정 로드 실패:", error);
+          document.getElementById("events").innerText = "일정 불러오기 실패";
+        });
+    </script>
+</body>
+</html>
