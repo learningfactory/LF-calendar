@@ -9,7 +9,7 @@
     <ul id="events"></ul>
 
     <script>
-      fetch("https://us-central1-lf-calendar.cloudfunctions.net/getCalendarEvents")
+      fetch("https://asia-northeast3-lf-calendar.cloudfunctions.net/getCalendarEvents")
         .then(response => response.json())
         .then(events => {
           const ul = document.getElementById("events");
