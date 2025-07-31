@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프린터 예약 현황</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin: 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .reservation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .reservation-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #007bff;
+            transition: transform 0.2s ease;
+        }
+        
+        .reservation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .printer-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .reserver-name {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 8px 12px;
+            background: #e9ecef;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        
+        .time-info {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .date {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .time-range {
+            color: #007bff;
+            font-weight: 500;
+        }
+        
+        .no-reservations {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .refresh-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .refresh-btn:hover {
+            background: #0056b3;
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .reservation-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🖨️ 프린터 예약 현황</h1>
+        <button class="refresh-btn" onclick="loadReservations()">새로고침</button>
+    </div>
+    
+    <div id="loading" class="loading">
+        예약 현황을 불러오는 중...
+    </div>
+    
+    <div id="error" class="error" style="display: none;"></div>
+    
+    <div id="reservations" class="reservation-grid"></div>
+    
+    <div id="last-updated" class="last-updated"></div>
+
+    <script>
+        // Vercel 배포 후 실제 도메인으로 변경해야 합니다
+        const API_BASE_URL = window.location.origin;
+        
+        async function loadReservations() {
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('error');
+            const reservationsEl = document.getElementById('reservations');
+            const lastUpdatedEl = document.getElementById('last-updated');
+            
+            // 로딩 상태 표시
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            reservationsEl.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/calendar`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || '데이터를 불러올 수 없습니다.');
+                }
+                
+                loadingEl.style.display = 'none';
+                displayReservations(data.events);
+                
+                // 마지막 업데이트 시간 표시
+                lastUpdatedEl.textContent = `마지막 업데이트: ${new Date().toLocaleString('ko-KR')}`;
+                
+            } catch (error) {
+                console.error('Error loading reservations:', error);
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+                errorEl.textContent = `오류: ${error.message}`;
+            }
+        }
+        
+        function displayReservations(events) {
+            const reservationsEl = document.getElementById('reservations');
+            
+            if (!events || events.length === 0) {
+                reservationsEl.innerHTML = '<div class="no-reservations">현재 예약된 프린터가 없습니다.</div>';
+                return;
+            }
+            
+            const reservationCards = events
+                .filter(event => event.printerNumber || event.title?.includes('프린터'))
+                .map(event => createReservationCard(event))
+                .join('');
+            
+            if (reservationCards) {
+                reservationsEl.innerHTML = reservationCards;
+            } else {
+                reservationsEl.innerHTML = '<div class="no-reservations">프린터 예약 정보가 없습니다.</div>';
+            }
+        }
+        
+        function createReservationCard(event) {
+            const printerNumber = event.printerNumber || '?';
+            const reserverName = event.reserverName || '예약자 정보 없음';
+            
+            // 시간 정보 포맷팅
+            let dateStr = '';
+            let timeStr = '';
+            
+            if (event.startTime) {
+                const startDate = new Date(event.startTime);
+                const endDate = event.endTime ? new Date(event.endTime) : null;
+                
+                dateStr = startDate.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+                
+                if (endDate) {
+                    timeStr = `${startDate.toLocaleTimeString('ko-KR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })} ~ ${endDate.toLocaleTimeString('ko-KR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })}`;
+                }
+            }
+            
+            return `
+                <div class="reservation-card">
+                    <div class="printer-number">${printerNumber}번 프린터</div>
+                    <div class="reserver-name">👤 ${reserverName}</div>
+                    <div class="time-info">
+                        <div class="date">📅 ${dateStr}</div>
+                        ${timeStr ? `<div class="time-range">🕐 ${timeStr}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 페이지 로드 시 예약 현황 불러오기
+        window.addEventListener('load', loadReservations);
+        
+        // 5분마다 자동 새로고침
+        setInterval(loadReservations, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

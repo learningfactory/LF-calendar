@@ -1,0 +1,8 @@
+{
+  "name": "calendar-integration",
+  "version": "1.0.0",
+  "description": "Google Calendar integration for GitHub Pages",
+  "dependencies": {
+    "googleapis": "^126.0.1"
+  }
+}
