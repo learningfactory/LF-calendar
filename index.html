@@ -3,82 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Calendar 연동 (보안 강화 버전)</title>
+    <title>3D Printer Schedule (Read-Only)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* 페이지 전체 레이아웃 설정 */
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 20px; }
         
+        /* 캘린더들을 가로로 나열하는 컨테이너 */
         .calendar-container {
             display: flex;
-            overflow-x: auto; /* 가로 스크롤 허용 */
+            overflow-x: auto;
             padding: 10px;
             background-color: white;
-            gap: 0; 
-            white-space: nowrap; 
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
         .calendar-box {
             display: inline-block;
-            flex-direction: column;
-            align-items: center;
+            flex-shrink: 0; /* 너비 고정 */
         }
 
         .calendar-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
-            margin-bottom: 5px;
+            padding: 10px 0;
             text-align: center;
-            width: 100%;
+            background: #eee;
+            margin: 0;
+            border: 1px solid #ddd;
         }
 
         .calendar {
-            width: 125px; /* 개별 캘린더 너비 */
-            height: 550px; 
-            background-color: white;
-            border: none;
+            width: 130px; 
+            height: 600px; 
+            border: 1px solid #ddd;
         }
 
-        /* 날짜 컨트롤 영역 */
-        .date-controls { text-align: center; margin-bottom: 20px; }
-        .main-date { font-size: 22px; font-weight: bold; display: block; margin-bottom: 10px; }
-        .date-controls button { width: 90px; height: 35px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: #fff; }
-        .date-controls button:hover { background: #eee; }
+        /* 날짜 컨트롤 및 대문 날짜 스타일 */
+        .date-controls { text-align: center; margin-bottom: 25px; }
+        #main-date { font-size: 24px; font-weight: bold; color: #333; display: block; margin-bottom: 15px; }
+        .date-controls button { 
+            padding: 8px 15px; 
+            margin: 0 5px; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            border: 1px solid #007bff; 
+            background: #fff; 
+            color: #007bff;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .date-controls button:hover { background: #007bff; color: #fff; }
 
-        /* FullCalendar 내부 스타일 조정 (불필요한 요소 숨기기) */
-        .fc-col-header { display: none; } /* 요일 헤더 숨김 */
-        .fc-timegrid-slot-label { display: none !important; border: none !important; } /* 기본 시간 라벨 숨김 */
-        .fc-timegrid-slot { height: 20px !important; border-bottom: 1px solid #f0f0f0 !important; }
-        .fc-day-today { background: none !important; } /* 오늘 하이라이트 제거 */
+        /* FullCalendar 내부 UI 조정 */
+        .fc-col-header { display: none; } /* 요일 제거 */
+        .fc-timegrid-slot-label { display: none !important; } /* 기본 시간 라벨 숨김 */
+        .fc-timegrid-slot { height: 25px !important; } 
+        .fc-event { border: none !important; cursor: default !important; } /* 커서 모양 화살표로 고정 */
         
-        /* 첫 번째 캘린더에만 시간 축 표시 */
+        /* 첫 번째 칼럼에만 시간축 표시 */
         .calendar-box:first-child .fc-timegrid-slot-label { 
             display: block !important; 
             width: 50px; 
-            font-size: 12px !important; 
-            color: #666;
+            font-size: 11px !important; 
+            text-align: right;
+            padding-right: 5px;
         }
-        .calendar-box:first-child .calendar { width: 175px; }
+        .calendar-box:first-child .calendar { width: 180px; }
 
-        /* 예약 텍스트 스타일 커스텀 */
-        .custom-event-content {
+        /* 일정 텍스트 스타일 */
+        .event-text {
             font-size: 11px;
-            white-space: normal;
-            word-break: break-all;
             color: white;
             padding: 2px;
-            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     </style>
 </head>
 <body>
 
     <div class="date-controls">
-        <span class="main-date" id="main-date"></span>
+        <span id="main-date"></span>
         <button onclick="changeDate(-1)">◀ Prev.</button>
         <button onclick="goToToday()">Today</button>
         <button onclick="changeDate(1)">Next ▶</button>
@@ -99,13 +109,11 @@
         let currentDate = new Date();
         window.calendars = [];
 
-        // 상단 날짜 텍스트 업데이트 함수
         function updateMainDate() {
             let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('main-date').innerText = currentDate.toLocaleDateString('ko-KR', options);
         }
 
-        // 날짜 변경 시 모든 캘린더 동시 이동
         function changeDate(days) {
             currentDate.setDate(currentDate.getDate() + days);
             updateMainDate();
@@ -121,7 +129,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateMainDate();
             
-            // 프린터별 구글 캘린더 ID 설정
             const calendarData = [
                 { id: "learningfactory01@gmail.com", element: "calendar1", color: "#34A853" },
                 { id: "learningfactory11@gmail.com", element: "calendar2", color: "#34A853" },
@@ -142,28 +149,30 @@
                     slotMaxTime: '23:00:00',
                     allDaySlot: false,
                     height: "auto",
-                    expandRows: true,
                     headerToolbar: false,
-                    editable: false, // [보안] 드래그 앤 드롭 수정 비활성화
+                    editable: false, // 마우스 드래그 수정 불가
 
-                    // 구글 API 설정
+                    // 구글 캘린더 API 설정
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
 
-                    // [보안] 1. 일정 클릭 시 링크 이동 방지
+                    // [핵심 보안 1] 왼쪽 클릭 시 구글 페이지 이동 방지
                     eventClick: function(info) {
-                        info.jsEvent.preventDefault(); // 구글 캘린더 페이지로 넘어가지 않게 차단
+                        info.jsEvent.preventDefault();
                     },
 
-                    // [보안] 2. 일정 박스 안에 제목(텍스트)만 표시하도록 재정의
+                    // [핵심 보안 2] 일정 요소가 화면에 나타날 때 링크 속성(href) 강제 제거
+                    eventDidMount: function(info) {
+                        // info.el은 실제 <a> 태그 요소입니다.
+                        info.el.removeAttribute('href'); // 링크 주소 삭제 (우클릭 새 탭 열기 방지)
+                        info.el.style.pointerEvents = 'auto'; // 이벤트는 받되 링크 기능만 상실
+                    },
+
+                    // [핵심 보안 3] 내용을 순수 텍스트로만 구성 (기존 링크 구조 무시)
                     eventContent: function(arg) {
-                        let title = arg.event.title; // 예약자명 등 제목 가져오기
-                        
-                        // 새로운 HTML 노드를 만들어 순수 텍스트만 삽입
                         let domNode = document.createElement('div');
-                        domNode.classList.add('custom-event-content');
-                        domNode.innerText = title; 
-                        
+                        domNode.classList.add('event-text');
+                        domNode.innerText = arg.event.title; // 제목만 텍스트로 삽입
                         return { domNodes: [domNode] };
                     }
                 });
