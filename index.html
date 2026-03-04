@@ -90,25 +90,30 @@
             box-sizing: border-box;
         }
         
+        /* [수정] 시각 칼럼 가장 윗쪽 회색 바 제거 */
+        .time-tick:first-child::after {
+            display: none;
+        }
+
         /* 시각 텍스트 위치 보정 */
         .time-tick span {
             position: absolute;
-            right: 10px;
+            right: 11px; /* 차이를 1픽셀만 더 줄임 */
             top: -8px; /* 폰트 위치를 눈금 정중앙에 맞춤 */
             font-size: 10px;
             color: #555;
             font-weight: 500;
         }
 
-        /* 회색 눈금 바 (Tick) */
+        /* 회색 눈금 바 (Tick) - 두께 균일하게 수정 */
         .time-tick::after {
             content: "";
             position: absolute;
             right: 0;
             top: 0; /* 슬롯의 맨 윗부분에 위치 */
             width: 7px;
-            height: 1px;
-            background-color: #ccc;
+            height: 1px; /* 두께 균일하게 수정 */
+            background-color: #ddd; /* 선명도 조절 */
         }
 
         /* 이벤트 디자인 */
@@ -131,7 +136,7 @@
     
     <div class="dashboard-wrapper">
         <div class="time-axis" id="time-axis">
-            <div class="time-axis-header">TIME</div>
+            <div class="time-axis-header">&nbsp;</div> 
         </div>
 
         <div class="calendar-container">
@@ -155,7 +160,7 @@
     </div>
 
     <script>
-        // 코드 가독성을 위해 주석을 추가했습니다. [사용자 정보 반영]
+        // 코드 가독성을 위해 주석을 추가했습니다.
         let currentDate = new Date();
         window.calendars = [];
 
