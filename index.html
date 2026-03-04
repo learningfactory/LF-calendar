@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (White Background)</title>
+    <title>3D Printer Schedule (Final Design)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* [전체] 상하 스크롤 차단 및 외부 배경 설정 */
+        /* [전체] 배경을 흰색으로 통일 및 스크롤 설정 */
         html, body { 
             font-family: 'Segoe UI', sans-serif; 
-            background-color: #f0f0f0; /* 표 외부 영역 배경 */
+            background-color: #ffffff; 
             margin: 0; padding: 0; 
             height: 100%; overflow: hidden; 
             position: fixed; width: 100%;
@@ -21,7 +21,7 @@
         
         .header-section {
             text-align: center; padding: 12px 0;
-            background: #fff; border-bottom: 1px solid #ddd;
+            background: #ffffff; border-bottom: 1px solid #ddd;
             height: 95px; box-sizing: border-box;
         }
         .main-date { display: block; font-size: 18px; font-weight: bold; margin-bottom: 8px; }
@@ -32,10 +32,10 @@
             display: inline-flex; justify-content: center; align-items: center;
         }
 
-        /* [핵심] 표가 들어가는 공간 설정 */
+        /* [수정] 회색 영역 제거를 위해 배경을 흰색으로 고정 */
         .outer-wrapper {
             display: flex; position: relative;
-            background: #f0f0f0; /* 스크롤 가능 영역의 배경 */
+            background: #ffffff; 
             overflow-x: auto; overflow-y: hidden;
             height: calc(100vh - 95px); width: 100%;
         }
@@ -59,15 +59,15 @@
             width: 6px; height: 1px; background-color: #bbb;
         }
 
-        /* [수정] 캘린더 본체 공간 배경을 흰색으로 고정 */
+        /* 캘린더 컨테이너 */
         .calendar-container {
             display: inline-flex; position: relative; height: fit-content;
-            background-color: #ffffff; /* 표 전체 배경 흰색 */
+            background-color: #ffffff;
         }
 
         /* 실시간 빨간 선 */
         #now-indicator-line {
-            position: absolute; left: 0; width: 100%; height: 1px;
+            position: absolute; left: 0; width: 100%; height: 2px; /* 선을 조금 더 잘 보이게 2px로 수정 */
             background-color: #ff0000; z-index: 100; pointer-events: none; display: none;
         }
 
@@ -75,7 +75,7 @@
         .calendar-box { 
             width: 75px; max-width: 75px; flex-shrink: 0; 
             border-right: 1px solid #e5e5e5; box-sizing: border-box; 
-            overflow: hidden; background-color: #ffffff; /* 각 칸 배경 흰색 */
+            overflow: hidden; background-color: #ffffff;
         }
 
         .calendar-title {
@@ -84,20 +84,28 @@
             background: #ffffff; border-bottom: 1px solid #ddd;
         }
 
-        /* FullCalendar 내부 스타일 제어 */
-        .fc { max-width: 75px !important; background-color: #ffffff !important; }
+        /* [수정] 오늘 날짜의 배경색을 연한 노란색으로 설정 */
+        .fc-timegrid-slot { 
+            height: 24px !important; 
+            border-bottom: 1px solid #e5e5e5 !important; 
+            background-color: #fffff0 !important; /* lightyellow */
+        }
+        
+        /* FullCalendar 기본 설정 */
+        .fc { max-width: 75px !important; background-color: transparent !important; }
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; }
-        .fc-timegrid-slot { height: 24px !important; border-bottom: 1px solid #e5e5e5 !important; background-color: #ffffff !important; }
         
-        /* 이벤트 스타일 및 과거 예약 음영 */
+        /* [수정] 만료된 예약건 음영 처리 스타일 */
         .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; }
-        .fc-event-past { opacity: 0.45 !important; filter: grayscale(0.2); }
-        .event-text { font-size: 8px; color: white; padding: 1px; text-align: center; line-height: 1.1; word-break: break-all; }
+        .fc-event-past { 
+            opacity: 0.4 !important; /* 투명도를 낮춰서 흐리게 표기 */
+            filter: grayscale(0.5) brightness(0.8); /* 회색조 및 밝기 감소 */
+        }
         
+        .event-text { font-size: 8px; color: white; padding: 1px; text-align: center; line-height: 1.1; word-break: break-all; }
         .fc-scroller { overflow: hidden !important; }
-        /* 옅은 음영(비영업시간 등) 강제 제거하여 순수 흰색 유지 */
-        .fc-non-business, .fc-timegrid-bg-harness, .fc-bg-layer { background: transparent !important; display: none !important; }
+        .fc-non-business, .fc-timegrid-bg-harness { background: transparent !important; }
     </style>
 </head>
 <body>
@@ -137,7 +145,7 @@
     </div>
 
     <script>
-        // 주석: 표 내부의 모든 배경을 순수 흰색(#ffffff)으로 고정하여 가독성을 높였습니다. [사용자 정보 반영]
+        // 코드 주석: 배경을 흰색으로 정돈하고, 오늘 날짜는 노란색, 지난 예약은 음영 처리하도록 구현했습니다.
         let currentDate = new Date();
         window.calendars = [];
 
@@ -158,6 +166,7 @@
             const dayStr = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
             document.getElementById('main-date').innerText = `${dateStr} (${dayStr})`;
             updateRedLine();
+            // 날짜 변경 시 만료 음영을 다시 계산하기 위해 refetch
             calendars.forEach(cal => cal.refetchEvents());
         }
 
@@ -219,13 +228,14 @@
                     slotDuration: '01:00:00',
                     allDaySlot: false,
                     contentHeight: 'auto',
-                    handleWindowResize: false,
                     headerToolbar: false,
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
                     
+                    // [핵심] 현재 시각 기준으로 지난 예약건 음영 처리
                     eventDidMount: function(info) {
                         const now = new Date();
+                        // 이벤트 종료 시간이 현재 시간보다 이전이면 클래스 추가
                         if (info.event.end < now) {
                             info.el.classList.add('fc-event-past');
                         }
