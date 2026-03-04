@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (Pastel & Sync Fix)</title>
+    <title>3D Printer Schedule (Final Polish)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
@@ -53,20 +53,18 @@
             transform: translateY(-6px);
         }
         
-        /* [요청] 시각 칼럼 눈금 위치 미세 조정 */
+        /* [요청] 시각 칼럼 회색 작대기 일괄 1px 위로 조정 */
         .time-slot-sync::after {
             content: ""; position: absolute; right: 0; 
+            top: -1px; /* 기존 0에서 -1px로 수정 */
             width: 5px; height: 1px; background-color: #ccc;
         }
-        /* 첫 번째 눈금(09:00) 1px 위로, 나머지는 2px 아래로 */
-        .time-slot-sync:first-child::after { top: -1px; } 
-        .time-slot-sync:not(:first-child)::after { top: 2px; }
 
         .calendar-container { display: inline-flex; position: relative; height: fit-content; background-color: #ffffff; }
 
-        /* 실시간 빨간 선 */
+        /* [요청] 실시간 빨간 선 두께 1px로 조정 */
         #now-indicator-line {
-            position: absolute; left: 0; width: 100%; height: 2px;
+            position: absolute; left: 0; width: 100%; height: 1px;
             background-color: #ff0000; z-index: 100; pointer-events: none; display: none;
         }
 
@@ -84,19 +82,16 @@
         .fc-col-header, .fc-timegrid-slot-label { display: none !important; }
         .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; opacity: 1 !important; }
 
-        /* [요청] 파스텔톤 효과: 밝기 조절 및 채도 감소 */
+        /* 파스텔톤 효과 및 진회색 폰트 */
         .fc-event-past { 
             filter: brightness(1.45) saturate(0.65) !important; 
         }
-        
         .event-text { 
             font-size: 8px; color: white; padding: 2px; 
             text-align: center; line-height: 1.2; 
             font-weight: normal; 
             word-break: break-all;
         }
-
-        /* [요청] 과거 건의 폰트 색상을 진회색으로 변경 */
         .fc-event-past .event-text { 
             color: #444 !important; 
             text-shadow: none !important;
@@ -132,7 +127,7 @@
     </div>
 
     <script>
-        // 주석: 파스텔톤 시각화 및 실시간 동기화 문제를 DOM 직접 제어 방식으로 해결했습니다. [사용자 정보 반영]
+        // 주석: 눈금 위치 조정, 빨간 선 두께 변경 및 실시간 음영 업데이트 로직을 강화했습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -146,20 +141,20 @@
             }
         }
 
-        // [핵심] 실시간 색상 강제 업데이트 로직 (DOM 직접 조작 추가)
+        // 실시간 음영 강제 업데이트 함수
         function updateRealTimeShading() {
             const now = new Date();
             calendars.forEach(calendar => {
                 calendar.getEvents().forEach(event => {
-                    // FullCalendar 이벤트 객체와 연동된 DOM 엘리먼트 확인
-                    const el = event.el;
-                    if (!el) return;
-
-                    const isPast = event.end < now;
-                    if (isPast) {
-                        el.classList.add('fc-event-past');
-                    } else {
-                        el.classList.remove('fc-event-past');
+                    // FullCalendar 이벤트와 연결된 DOM 요소를 직접 찾습니다.
+                    // 이 방식이 가장 확실하게 실시간 상태를 반영합니다.
+                    const el = event.el; 
+                    if (el) {
+                        if (event.end < now) {
+                            el.classList.add('fc-event-past');
+                        } else {
+                            el.classList.remove('fc-event-past');
+                        }
                     }
                 });
             });
@@ -171,6 +166,8 @@
             document.getElementById('main-date').innerText = `${dateStr} (${dayStr})`;
             updateRedLine();
             calendars.forEach(cal => cal.refetchEvents());
+            // 날짜 변경 후 이벤트 로드 시간을 고려하여 약간의 지연 후 음영 처리
+            setTimeout(updateRealTimeShading, 500);
         }
 
         function updateRedLine() {
@@ -229,7 +226,7 @@
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
                     
                     eventDidMount: function(info) {
-                        // 초기 렌더링 시 과거 건 체크
+                        // 렌더링 시점에 즉시 과거 여부 판단
                         if (info.event.end < new Date()) {
                             info.el.classList.add('fc-event-past');
                         }
@@ -247,14 +244,14 @@
 
             updateMainDate();
 
-            // 1분마다 빨간 선과 이벤트 음영 상태를 강제 동기화
+            // 1분마다 빨간 선 이동 및 과거 예약 음영 처리 강제 실행
             setInterval(() => {
                 updateRedLine();
                 updateRealTimeShading();
             }, 60000);
 
-            // 페이지 로드 후 2초 뒤에 한 번 더 강제 체크
-            setTimeout(updateRealTimeShading, 2000);
+            // 구글 캘린더 데이터 동기화 대기 후 초기 음영 적용
+            setTimeout(updateRealTimeShading, 2500);
         });
     </script>
 </body>
