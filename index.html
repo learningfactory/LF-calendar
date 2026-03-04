@@ -3,78 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (14 Slots)</title>
+    <title>3D Printer Schedule (Security Enhanced)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 20px; }
+        /* [UI] 전체 배경 및 폰트 설정 */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding: 20px; }
         
+        /* [UI] 캘린더 가로 나열 컨테이너 */
         .calendar-container {
             display: flex;
-            overflow-x: auto; /* 14개가 넘어가면 가로 스크롤 발생 */
+            overflow-x: auto;
             padding: 10px;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            gap: 2px; /* 칼럼 사이 아주 미세한 간격 */
+            gap: 0; 
+            white-space: nowrap; 
         }
         
-        .calendar-box {
-            display: inline-block;
-            flex-shrink: 0; 
-        }
+        .calendar-box { display: inline-block; }
 
         .calendar-title {
-            font-size: 13px; /* 항목이 많아졌으므로 폰트 약간 축소 */
-            font-weight: bold;
-            padding: 8px 0;
-            text-align: center;
-            background: #f1f1f1;
-            margin: 0;
-            border: 1px solid #ddd;
-            border-bottom: none;
+            font-size: 15px; font-weight: bold; margin-bottom: 5px;
+            text-align: center; width: 100%;
         }
 
         .calendar {
-            width: 120px; /* 개별 너비를 살짝 줄여 더 많이 보이게 조절 */
-            height: 600px; 
-            border: 1px solid #ddd;
+            width: 125px; height: 550px; 
+            background-color: white; border: 1px solid #eee;
         }
 
-        .date-controls { text-align: center; margin-bottom: 25px; }
-        #main-date { font-size: 24px; font-weight: bold; color: #333; display: block; margin-bottom: 15px; }
-        .date-controls button { 
-            padding: 8px 15px; margin: 0 5px; cursor: pointer; border-radius: 4px; 
-            border: 1px solid #007bff; background: #fff; color: #007bff; font-weight: bold;
-        }
-        .date-controls button:hover { background: #007bff; color: #fff; }
+        /* [UI] 날짜 컨트롤 버튼 스타일 */
+        .date-controls { text-align: center; margin-bottom: 20px; }
+        .main-date { font-size: 22px; font-weight: bold; display: block; margin-bottom: 10px; }
+        .date-controls button { width: 90px; height: 35px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: #fff; }
 
-        /* FullCalendar UI 숨김 처리 */
+        /* [FullCalendar] 내부 레이아웃 미세 조정 */
         .fc-col-header { display: none; } 
-        .fc-timegrid-slot-label { display: none !important; } 
-        .fc-timegrid-slot { height: 25px !important; } 
-        .fc-event { border: none !important; cursor: default !important; } 
+        .fc-timegrid-slot-label { display: none !important; border: none !important; }
+        .fc-timegrid-slot { height: 20px !important; border-bottom: 1px solid #f0f0f0 !important; }
         
-        /* 첫 번째 칼럼(No.01)에만 시간 표시 */
-        .calendar-box:first-child .fc-timegrid-slot-label { 
-            display: block !important; 
-            width: 50px; 
-            font-size: 11px !important; 
-            text-align: right;
-            padding-right: 5px;
-        }
-        .calendar-box:first-child .calendar { width: 170px; }
+        /* [UI] 첫 번째 칼럼만 시간축 표시 (구버전의 장점 유지) */
+        .calendar-box:first-child .fc-timegrid-slot-label { display: block !important; width: 44px; font-size: 13px !important; }
+        .calendar-box:first-child .calendar { width: 169px; }
 
-        .event-text { font-size: 11px; color: white; padding: 2px; overflow: hidden; text-overflow: ellipsis; }
+        /* [보안] 일정 클릭 불가 시각화 */
+        .fc-event { cursor: default !important; border: none !important; }
+        .event-text { font-size: 11px; color: white; padding: 2px; }
     </style>
 </head>
 <body>
 
     <div class="date-controls">
-        <span id="main-date"></span>
+        <span class="main-date" id="main-date"></span>
         <button onclick="changeDate(-1)">◀ Prev.</button>
         <button onclick="goToToday()">Today</button>
         <button onclick="changeDate(1)">Next ▶</button>
@@ -89,7 +72,6 @@
         <div class="calendar-box"><h3 class="calendar-title">No.06</h3><div id="calendar6" class="calendar"></div></div>
         <div class="calendar-box"><h3 class="calendar-title">No.07</h3><div id="calendar7" class="calendar"></div></div>
         <div class="calendar-box"><h3 class="calendar-title">No.08</h3><div id="calendar8" class="calendar"></div></div>
-        
         <div class="calendar-box"><h3 class="calendar-title">test.01</h3><div id="calendar9" class="calendar"></div></div>
         <div class="calendar-box"><h3 class="calendar-title">test.02</h3><div id="calendar10" class="calendar"></div></div>
         <div class="calendar-box"><h3 class="calendar-title">test.03</h3><div id="calendar11" class="calendar"></div></div>
@@ -102,11 +84,13 @@
         let currentDate = new Date();
         window.calendars = [];
 
+        // [기능] 상단 날짜 텍스트 업데이트
         function updateMainDate() {
             let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('main-date').innerText = currentDate.toLocaleDateString('ko-KR', options);
         }
 
+        // [기능] 전역 날짜 변경 컨트롤
         function changeDate(days) {
             currentDate.setDate(currentDate.getDate() + days);
             updateMainDate();
@@ -122,7 +106,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateMainDate();
             
-            // 데이터 배열: 각 요소의 ID와 HTML의 div ID가 정확히 매칭됨
+            // [데이터] 구글 캘린더 ID 매핑 (확장된 14개)
             const calendarData = [
                 { id: "learningfactory01@gmail.com", element: "calendar1", color: "#34A853" },
                 { id: "learningfactory11@gmail.com", element: "calendar2", color: "#34A853" },
@@ -132,7 +116,7 @@
                 { id: "learningfactory06@gmail.com", element: "calendar6", color: "#34A853" },
                 { id: "learningfactory10@gmail.com", element: "calendar7", color: "#34A853" },
                 { id: "learningfactory08@gmail.com", element: "calendar8", color: "#34A853" },
-                { id: "learningfactory04@gmail.com", element: "calendar9", color: "#4285F4" }, // 색상을 살짝 구분함
+                { id: "learningfactory04@gmail.com", element: "calendar9", color: "#4285F4" },
                 { id: "learningfactory09@gmail.com", element: "calendar10", color: "#4285F4" },
                 { id: "learningfactory19@gmail.com", element: "calendar11", color: "#4285F4" },
                 { id: "learningfactory20@gmail.com", element: "calendar12", color: "#4285F4" },
@@ -142,7 +126,7 @@
 
             calendarData.forEach((cal) => {
                 let calendarEl = document.getElementById(cal.element);
-                if (!calendarEl) return; // 혹시라도 ID를 못 찾으면 건너뜀
+                if (!calendarEl) return;
 
                 let calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'timeGridDay',
@@ -151,17 +135,33 @@
                     slotMaxTime: '23:00:00',
                     allDaySlot: false,
                     height: "auto",
+                    expandRows: true,
                     headerToolbar: false,
                     editable: false,
+
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
 
+                    // [보안 1] 왼쪽 클릭 차단
                     eventClick: function(info) { info.jsEvent.preventDefault(); },
-                    
+
+                    // [보안 2] 우클릭(새 탭 열기) 방지를 위한 href 제거
                     eventDidMount: function(info) {
-                        info.el.removeAttribute('href'); // 링크 속성 제거 (우클릭 차단)
+                        info.el.removeAttribute('href');
                     },
 
+                    // [보안 3] 텍스트만 표시하도록 내용 재구성
                     eventContent: function(arg) {
-                        let domNode = document.createElement
-
+                        let domNode = document.createElement('div');
+                        domNode.classList.add('event-text');
+                        domNode.innerText = arg.event.title; // 제목(이름)만 노출
+                        return { domNodes: [domNode] };
+                    }
+                });
+                calendar.render();
+                calendars.push(calendar);
+            });
+        });
+    </script>
+</body>
+</html>
