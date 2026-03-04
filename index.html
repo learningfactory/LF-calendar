@@ -24,13 +24,14 @@
             width: fit-content;
         }
 
-        /* [수정] 시각 칼럼 - 하단 보더 제거하여 삐져나온 선 정리 */
+        /* [수정] 시각 칼럼 - 23시 아래로 선이 삐져나오지 않도록 높이 제한 */
         .time-column {
             width: 60px;
             flex-shrink: 0;
             background-color: transparent;
             border-right: 1px solid #ddd;
-            border-bottom: none; 
+            overflow: hidden; /* 하단으로 삐져나가는 선 차단 */
+            height: calc(35px + (24px * 15)); /* 헤더(35) + 슬롯15개(24*15) */
         }
 
         .time-header {
@@ -50,15 +51,14 @@
             position: relative;
         }
 
-        /* [수정] 시각 폰트 8pt 적용 및 위치 재보정 */
         .time-slot-sync span {
             font-size: 8pt; 
             color: #444;
             font-weight: 600;
-            transform: translateY(-5px); /* 폰트가 작아진 만큼 위치 최적화 */
+            transform: translateY(-5px); 
         }
 
-        /* 기본 회색 작대기 설정 (top: 2px) */
+        /* 기본 회색 작대기 (top: 2px) */
         .time-slot-sync::after {
             content: "";
             position: absolute;
@@ -69,7 +69,7 @@
             background-color: #bbb;
         }
 
-        /* [수정] 09:00 작대기만 2px 위로 (결과적으로 top: 0) */
+        /* 09:00 작대기 위치 보정 */
         .is-first-slot::after {
             top: 0 !important;
         }
@@ -98,23 +98,19 @@
         }
         .fc-theme-standard td, .fc-theme-standard th { border-top: none !important; }
 
-        /* [수정] 이벤트 슬롯을 빵빵하게 만들기 위해 마진 제거 및 너비 확장 */
-        .fc-timegrid-event-harness {
-            margin: 0 !important; /* 외부 여백 제거 */
-        }
+        /* [롤백] 슬롯 여백 및 둥근 모서리 복구 */
         .fc-event { 
             border: none !important; 
-            border-radius: 0px !important; /* 각진 모양이 더 꽉 차 보임 */
-            margin: 0.5px 0 !important; /* 상하 아주 미세한 간격만 유지 */
-            padding: 0 !important;
+            border-radius: 4px !important; /* 이전의 둥근 디자인으로 복구 */
+            margin: 1px !important; /* 여백 다시 추가 */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* 입체감 살짝 추가 */
         }
         .event-text { 
             font-size: 9px; 
             color: white; 
-            padding: 2px 1px; 
+            padding: 2px; 
             text-align: center; 
             line-height: 1.1;
-            word-break: break-all;
         }
         
         #now-indicator-line {
@@ -139,7 +135,7 @@
     <div class="dashboard-wrapper">
         <div class="time-column" id="time-column">
             <div class="time-header"></div>
-        </div>
+            </div>
 
         <div class="calendar-container">
             <div id="now-indicator-line"></div>
@@ -162,7 +158,7 @@
     </div>
 
     <script>
-        // 요청하신 09:00 작대기 위치 및 슬롯 빵빵함 조절 로직입니다. [사용자 정보 반영]
+        // 요청하신 대로 슬롯 디자인을 이전 상태로 롤백하고 하단 선을 정리했습니다.
         let currentDate = new Date();
         window.calendars = [];
 
@@ -174,7 +170,6 @@
             for(let i = startHour; i <= endHour; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'time-slot-sync';
-                // 09:00 첫 슬롯에만 특별 클래스 부여
                 if (i === startHour) slot.classList.add('is-first-slot');
 
                 slot.innerHTML = `<span>${i.toString().padStart(2, '0')}:00</span>`;
