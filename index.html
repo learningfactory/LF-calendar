@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Algorithm Sync)</title>
+    <title>3D Printer Schedule (Refined UI)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
@@ -24,81 +24,77 @@
             width: fit-content;
         }
 
-        /* [수정] 시각 칼럼 컨테이너 */
+        /* [수정] 시각 칼럼 - 왼쪽, 위, 아래 테두리 제거 */
         .time-column {
-            width: 55px;
+            width: 60px; /* 조금 더 빵빵하게 너비 조정 */
             flex-shrink: 0;
-            background-color: white;
-            border-left: 1px solid #ddd;
-            border-bottom: 1px solid #ddd;
-            border-right: 1px solid #eee; /* No.01 왼쪽 세로 보조선 */
+            background-color: transparent; /* 배경을 투명하게 하여 테두리 부재 강조 */
+            border-right: 1px solid #ddd; /* 오른쪽 세로선만 유지 */
         }
 
+        /* 시각 헤더 테두리 제거 */
         .time-header {
             height: 35px; 
-            background: #fdfdfd;
-            border-top: 1px solid #ddd;
-            border-bottom: 1px solid #ddd;
+            background: transparent;
             box-sizing: border-box;
         }
 
-        /* [핵심] 타임슬롯 알고리즘과 동일하게 설정된 슬롯 스타일 */
+        /* [수정] 시각 슬롯 - 가로 보조선(border) 제거 */
         .time-slot-sync {
-            height: 24px; /* FullCalendar slotHeight와 동일 */
+            height: 24px;
             display: flex;
             align-items: flex-start;
             justify-content: flex-end;
-            padding-right: 10px;
+            padding-right: 12px;
             box-sizing: border-box;
-            border-bottom: 1px solid #eee; /* 가로 보조선 */
+            border: none; /* 슬롯 자체의 보조선 제거 */
             position: relative;
         }
 
         /* 시각 숫자 스타일 */
         .time-slot-sync span {
-            font-size: 10px;
-            color: #555;
-            font-weight: 500;
-            transform: translateY(-8px); /* 선 중앙에 맞춤 */
+            font-size: 11px; /* 약간 더 크게 */
+            color: #444; /* 조금 더 진하게 */
+            font-weight: 600;
+            transform: translateY(-9px); 
         }
 
-        /* 회색 작대기 (Tick) */
+        /* [수정] 회색 작대기 (Tick) - 1px 하단 이동 */
         .time-slot-sync::after {
             content: "";
             position: absolute;
             right: 0;
-            top: -1px;
-            width: 7px;
+            top: 1px; /* 1px 아래로 이동 */
+            width: 8px;
             height: 1px;
-            background-color: #ccc;
+            background-color: #bbb; /* 작대기도 조금 더 진하게 */
         }
 
-        /* 09:00 슬롯의 경우 작대기 제거 */
+        /* 09:00 슬롯 상단 작대기 제거 */
         .is-first-slot::after { display: none !important; }
 
-        /* 캘린더 디자인 */
+        /* 캘린더 컨테이너 */
         .calendar-container {
             display: flex;
             background-color: white;
-            border-bottom: 1px solid #ddd;
-            border-right: 1px solid #ddd;
+            border: 1px solid #ddd; /* 본체만 테두리 유지 */
             position: relative;
         }
 
-        .calendar-box { width: 75px; flex-shrink: 0; border-right: 1px solid #eee; }
+        .calendar-box { width: 75px; flex-shrink: 0; border-right: 1px solid #e5e5e5; }
         .calendar-title {
             font-size: 11px; font-weight: bold; margin: 0; 
             height: 35px; line-height: 35px; text-align: center;
-            background: #fdfdfd; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;
+            background: #fdfdfd; border-bottom: 1px solid #ddd;
             box-sizing: border-box;
         }
 
-        /* FullCalendar 내부 보조선 설정 */
+        /* [수정] FullCalendar 내부 보조선 선명도 강화 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; }
         .fc-timegrid-slot { 
             height: 24px !important; 
-            border-bottom: 1px solid #eee !important; 
+            border-bottom: 1px solid #e5e5e5 !important; /* 살짝 더 진한 회색 */
             box-sizing: border-box;
         }
         .fc-theme-standard td, .fc-theme-standard th { border-top: none !important; }
@@ -111,6 +107,7 @@
             pointer-events: none; display: none;
         }
 
+        /* 이벤트 스타일 */
         .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; }
         .event-text { font-size: 9px; color: white; padding: 2px; text-align: center; line-height: 1.1; }
         .fc-scroller { overflow: hidden !important; }
@@ -132,6 +129,7 @@
 
         <div class="calendar-container">
             <div id="now-indicator-line"></div>
+            
             <div class="calendar-box"><h3 class="calendar-title">No.01</h3><div id="calendar1" class="calendar"></div></div>
             <div class="calendar-box"><h3 class="calendar-title">No.02</h3><div id="calendar2" class="calendar"></div></div>
             <div class="calendar-box"><h3 class="calendar-title">No.03</h3><div id="calendar3" class="calendar"></div></div>
@@ -150,23 +148,20 @@
     </div>
 
     <script>
-        // 코드의 의도를 명확히 하기 위해 알고리즘 동기화 주석을 추가했습니다. [사용자 정보 반영]
+        // 코드 가독성을 위해 디자인 변경점에 주석을 달았습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
-        // [알고리즘] FullCalendar의 slotMinTime/MaxTime 루프와 동일하게 슬롯을 생성합니다.
         function syncTimeColumn() {
             const col = document.getElementById('time-column');
-            const startHour = 9;  // slotMinTime
-            const endHour = 23;   // slotMaxTime
+            const startHour = 9;
+            const endHour = 23;
 
             for(let i = startHour; i <= endHour; i++) {
                 const slot = document.createElement('div');
-                
-                // 타임슬롯 칼럼과 동일한 클래스 구조 부여
                 slot.className = 'time-slot-sync';
                 
-                // 09:00인 경우 상단 작대기 제거를 위한 특수 클래스 추가
+                // 09:00 상단 작대기 제거 클래스
                 if (i === startHour) {
                     slot.classList.add('is-first-slot');
                 }
@@ -214,7 +209,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            syncTimeColumn(); // 시각 칼럼 생성 알고리즘 실행
+            syncTimeColumn();
             updateMainDate();
             
             const calendarData = [
