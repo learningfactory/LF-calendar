@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Final Alignment)</title>
+    <title>3D Printer Schedule (Separated Time Column)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
+        /* 기본 스타일 및 레이아웃 */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px; overflow-x: auto; }
         
-        /* 상단 날짜 컨트롤 */
         .date-controls { text-align: center; padding: 10px 0; }
         .main-date { font-size: 18px; font-weight: bold; margin-right: 15px; }
         .date-controls button { width: 65px; height: 26px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; }
 
-        /* 전체 레이아웃 구성 */
         .dashboard-wrapper {
             display: flex;
             justify-content: center;
@@ -26,44 +25,40 @@
             width: fit-content;
         }
 
-        /* [수정] 시각 칼럼 - 표의 한 열처럼 구성 */
+        /* [핵심] 완전히 분리된 시각 칼럼 */
         .time-column {
             width: 55px;
             flex-shrink: 0;
             background-color: white;
-            border-top: 1px solid #ddd;
+            /* 09:00 위 선을 없애기 위해 전체 상단 보더는 생략 */
             border-left: 1px solid #ddd;
             border-bottom: 1px solid #ddd;
-            /* No.01 왼쪽에 세로선을 만들기 위해 우측 보더 추가 */
-            border-right: 1px solid #eee; 
+            border-right: 1px solid #eee; /* No.01 왼쪽 세로선 역할 */
             z-index: 10;
         }
 
-        /* 시각 칼럼 헤더 (상단 빈칸) */
+        /* 시각 칼럼 헤더 (상단 빈 공간) */
         .time-header {
             height: 35px; 
             background: #fdfdfd;
+            border-top: 1px solid #ddd; /* 여기서부터 상단 테두리 시작 */
             border-bottom: 1px solid #ddd;
+            box-sizing: border-box;
         }
 
-        /* [핵심] 시각 슬롯 및 가로 보조선 */
+        /* 시각 슬롯 및 가로 보조선 */
         .time-slot {
-            height: 24px; /* 캘린더 슬롯 높이와 일치 */
+            height: 24px; /* 캘린더 슬롯 높이와 1:1 매칭 */
             position: relative;
             box-sizing: border-box;
-            /* 가로 보조선을 다시 그려줌 */
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #eee; /* 가로 가이드라인 */
         }
 
-        /* [수정] 09:00 상단의 가로선을 제거 (전체 테두리 중 상단만 제외) */
-        .time-column { border-top: none; }
-        .time-header { border-top: 1px solid #ddd; }
-
-        /* 시각 숫자 위치 조정 */
+        /* 시각 숫자 스타일 */
         .time-slot span {
             position: absolute;
             right: 12px;
-            top: -8px; 
+            top: -8px; /* 숫자를 가로선 중앙에 걸치게 배치 */
             font-size: 10px;
             color: #555;
             font-weight: 500;
@@ -74,20 +69,19 @@
             content: "";
             position: absolute;
             right: 0;
-            top: -1px; /* 가로 보조선 위치에 맞춤 */
+            top: -1px;
             width: 7px;
             height: 1px;
             background-color: #ccc;
         }
 
-        /* 09:00 위에는 작대기 표시 안 함 */
+        /* 09:00 상단 작대기 제거 */
         .time-slot:first-child::after { display: none; }
 
-        /* 캘린더 컨테이너 */
+        /* 캘린더 컨테이너 영역 */
         .calendar-container {
             display: flex;
             background-color: white;
-            border-top: 1px solid #ddd;
             border-bottom: 1px solid #ddd;
             border-right: 1px solid #ddd;
             position: relative;
@@ -102,22 +96,22 @@
         .calendar-title {
             font-size: 11px; font-weight: bold; margin: 0; 
             height: 35px; line-height: 35px; text-align: center;
-            background: #fdfdfd; border-bottom: 1px solid #ddd;
+            background: #fdfdfd; 
+            border-top: 1px solid #ddd; /* 시각 헤더와 높이 맞춤 */
+            border-bottom: 1px solid #ddd;
             box-sizing: border-box;
         }
 
         .calendar { width: 75px; height: auto; }
 
-        /* FullCalendar 격자 설정 */
+        /* FullCalendar 내부 그리드 보정 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; }
         .fc-timegrid-slot { 
             height: 24px !important; 
-            /* 가로 보조선을 캘린더 안에도 다시 그려줌 */
-            border-bottom: 1px solid #eee !important; 
+            border-bottom: 1px solid #eee !important; /* 가로 보조선 복구 */
             box-sizing: border-box;
         }
-        /* 불필요한 기본 상단 보더 제거 */
         .fc-theme-standard td, .fc-theme-standard th { border-top: none !important; }
 
         /* 현재 시각 빨간 선 */
@@ -132,7 +126,7 @@
             display: none;
         }
 
-        /* 이벤트 스타일 */
+        /* 이벤트 디자인 */
         .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; }
         .event-text { font-size: 9px; color: white; padding: 2px; text-align: center; line-height: 1.1; }
         .fc-scroller { overflow: hidden !important; }
@@ -150,7 +144,7 @@
     <div class="dashboard-wrapper">
         <div class="time-column" id="time-column">
             <div class="time-header"></div>
-        </div>
+            </div>
 
         <div class="calendar-container">
             <div id="now-indicator-line"></div>
@@ -173,11 +167,11 @@
     </div>
 
     <script>
-        // 사용자의 요청에 따라 가로 보조선과 세로선을 추가한 정렬 로직입니다. [사용자 정보 반영]
+        // 코드 가독성을 위해 로직별 주석을 추가했습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
-        // 09:00 ~ 23:00 시각 슬롯 생성
+        // 분리된 시각 칼럼의 슬롯을 동적으로 생성합니다.
         function createTimeColumn() {
             const col = document.getElementById('time-column');
             for(let i=9; i<=23; i++) {
@@ -195,6 +189,7 @@
             updateRedLine();
         }
 
+        // 현재 시각 빨간 선의 위치를 계산합니다.
         function updateRedLine() {
             const line = document.getElementById('now-indicator-line');
             const now = new Date();
