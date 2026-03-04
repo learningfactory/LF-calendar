@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (Real-time Shading)</title>
+    <title>3D Printer Schedule (Natural Shading)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* 기본 레이아웃 및 배경 순백색 설정 */
+        /* 기본 레이아웃 및 순백색 배경 */
         html, body { 
             font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif; 
             background-color: #ffffff; margin: 0; padding: 0; 
@@ -35,7 +35,7 @@
             height: calc(100vh - 95px); width: 100%;
         }
 
-        /* 시간 칼럼 숫자 크기 축소 반영 */
+        /* 시각 칼럼 숫자 크기 축소 */
         .time-column {
             width: 45px; flex-shrink: 0; background-color: #ffffff; border-right: 1px solid #ddd;
             position: sticky; left: 0; z-index: 501; height: calc(35px + (24px * 15)); 
@@ -45,7 +45,7 @@
             height: 24px; display: flex; align-items: flex-start;
             justify-content: flex-end; padding-right: 6px; position: relative;
         }
-        .time-slot-sync span { font-size: 7pt; color: #777; font-weight: 500; transform: translateY(-6px); }
+        .time-slot-sync span { font-size: 7pt; color: #888; transform: translateY(-6px); }
 
         .calendar-container { display: inline-flex; position: relative; height: fit-content; background-color: #ffffff; }
 
@@ -64,22 +64,21 @@
             text-align: center; background: #ffffff; border-bottom: 1px solid #ddd; margin: 0;
         }
 
-        /* FullCalendar 내부 슬롯 순백색 유지 */
+        /* FullCalendar 내부 슬롯 순백색 */
         .fc-timegrid-slot { height: 24px !important; border-bottom: 1px solid #e5e5e5 !important; background-color: #ffffff !important; }
         .fc { max-width: 75px !important; background-color: transparent !important; }
         .fc-col-header, .fc-timegrid-slot-label { display: none !important; }
         
         /* 이벤트 기본 디자인 */
-        .fc-event { border: none !important; border-radius: 3px !important; margin: 1px !important; pointer-events: none !important; }
+        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; transition: opacity 0.3s ease; }
 
-        /* [핵심] 만료된 예약건에 대한 '탁한 명암' 효과 */
+        /* [핵심] 구글 캘린더 스타일의 자연스러운 과거 음영 처리 */
         .fc-event-past { 
-            filter: grayscale(0.9) brightness(0.7) contrast(1.2) !important;
-            opacity: 0.8 !important;
-            border: 1px solid #555 !important; /* 경계선을 주어 흐릿함 방지 */
+            opacity: 0.35 !important; /* 탁해지는 필터 대신 투명도를 주어 자연스럽게 처리 */
+            filter: saturate(0.5) !important; /* 채도만 살짝 낮춤 */
         }
         
-        .event-text { font-size: 8px; color: white; padding: 2px; text-align: center; line-height: 1.2; font-weight: 600; }
+        .event-text { font-size: 8px; color: white; padding: 2px; text-align: center; line-height: 1.2; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -109,7 +108,7 @@
     </div>
 
     <script>
-        // 주석: 실시간으로 오늘 예약 건 중 현재 시각 이전 건들을 찾아 탁한 음영을 입히는 로직을 구현했습니다. [사용자 정보 반영]
+        // 주석: 구글 캘린더처럼 자연스러운 투명도 음영을 적용하고, 1분마다 실시간으로 과거 건을 체크하여 업데이트합니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -123,17 +122,21 @@
             }
         }
 
-        // [핵심] 실시간 음영 업데이트 함수
-        function updateEventShading() {
+        // [핵심] 실시간 음영 업데이트 로직
+        function updateRealTimeShading() {
             const now = new Date();
             calendars.forEach(calendar => {
                 calendar.getEvents().forEach(event => {
-                    // 이벤트 요소 찾기
-                    const eventEl = event.el || document.querySelector(`[data-event-id="${event.id}"]`);
+                    // 이벤트가 현재 시간보다 이전에 끝났다면 fc-event-past 클래스 추가
                     if (event.end < now) {
-                        event.setProp('classNames', ['fc-event-past']);
+                        if (!event.classNames.includes('fc-event-past')) {
+                            event.setProp('classNames', ['fc-event-past']);
+                        }
                     } else {
-                        event.setProp('classNames', []);
+                        // 미래의 예약이면 클래스 제거
+                        if (event.classNames.includes('fc-event-past')) {
+                            event.setProp('classNames', []);
+                        }
                     }
                 });
             });
@@ -175,25 +178,21 @@
         document.addEventListener('DOMContentLoaded', function() {
             syncTimeColumn();
             
-            // 색상 배정 재조정 (가독성 높은 톤)
-            const noColor = "#2E7D32"; // 진한 녹색
-            const testColor = "#1565C0"; // 진한 파란색
-
             const calendarData = [
-                { id: "learningfactory01@gmail.com", element: "calendar1", color: noColor },
-                { id: "learningfactory11@gmail.com", element: "calendar2", color: noColor },
-                { id: "learningfactory03@gmail.com", element: "calendar3", color: noColor },
-                { id: "learningfactory13@gmail.com", element: "calendar4", color: noColor },
-                { id: "learningfactory05@gmail.com", element: "calendar5", color: noColor },
-                { id: "learningfactory06@gmail.com", element: "calendar6", color: noColor },
-                { id: "learningfactory10@gmail.com", element: "calendar7", color: noColor },
-                { id: "learningfactory08@gmail.com", element: "calendar8", color: noColor },
-                { id: "learningfactory04@gmail.com", element: "calendar9", color: testColor },
-                { id: "learningfactory09@gmail.com", element: "calendar10", color: testColor },
-                { id: "learningfactory19@gmail.com", element: "calendar11", color: testColor },
-                { id: "learningfactory20@gmail.com", element: "calendar12", color: testColor },
-                { id: "learningfactory12@gmail.com", element: "calendar13", color: testColor },
-                { id: "learningfactory24@gmail.com", element: "calendar14", color: testColor }
+                { id: "learningfactory01@gmail.com", element: "calendar1", color: "#34A853" },
+                { id: "learningfactory11@gmail.com", element: "calendar2", color: "#34A853" },
+                { id: "learningfactory03@gmail.com", element: "calendar3", color: "#34A853" },
+                { id: "learningfactory13@gmail.com", element: "calendar4", color: "#34A853" },
+                { id: "learningfactory05@gmail.com", element: "calendar5", color: "#34A853" },
+                { id: "learningfactory06@gmail.com", element: "calendar6", color: "#34A853" },
+                { id: "learningfactory10@gmail.com", element: "calendar7", color: "#34A853" },
+                { id: "learningfactory08@gmail.com", element: "calendar8", color: "#34A853" },
+                { id: "learningfactory04@gmail.com", element: "calendar9", color: "#4285F4" },
+                { id: "learningfactory09@gmail.com", element: "calendar10", color: "#4285F4" },
+                { id: "learningfactory19@gmail.com", element: "calendar11", color: "#4285F4" },
+                { id: "learningfactory20@gmail.com", element: "calendar12", color: "#4285F4" },
+                { id: "learningfactory12@gmail.com", element: "calendar13", color: "#4285F4" },
+                { id: "learningfactory24@gmail.com", element: "calendar14", color: "#4285F4" }
             ];
 
             calendarData.forEach((cal) => {
@@ -206,12 +205,15 @@
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
                     
-                    // 렌더링 시 클래스 부여
                     eventDidMount: function(info) {
                         const now = new Date();
                         if (info.event.end < now) {
                             info.el.classList.add('fc-event-past');
                         }
+                    },
+                    // 이벤트 데이터 로드 후 실시간 업데이트 호출
+                    eventsSet: function() {
+                        updateRealTimeShading();
                     },
                     eventContent: function(arg) {
                         let domNode = document.createElement('div');
@@ -226,13 +228,16 @@
 
             updateMainDate();
 
-            // 1분마다 빨간 선 위치와 예약 건의 음영 상태를 실시간 업데이트
+            // 1분마다 빨간 선 위치와 예약 건의 음영 상태를 실시간 체크
             setInterval(() => {
                 updateRedLine();
-                updateEventShading();
+                updateRealTimeShading();
             }, 60000);
 
-            setTimeout(updateRedLine, 500);
+            setTimeout(() => {
+                updateRedLine();
+                updateRealTimeShading();
+            }, 1000);
         });
     </script>
 </body>
