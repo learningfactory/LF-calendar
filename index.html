@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (Grid Final Fix)</title>
+    <title>3D Printer Schedule (White Background)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* [공통] 상하 스크롤 완전 차단 및 배경 설정 */
+        /* [전체] 상하 스크롤 차단 및 외부 배경 설정 */
         html, body { 
             font-family: 'Segoe UI', sans-serif; 
-            background-color: #f0f0f0; /* 우측 빈 공간과 대비되는 배경색 */
+            background-color: #f0f0f0; /* 표 외부 영역 배경 */
             margin: 0; padding: 0; 
             height: 100%; overflow: hidden; 
             position: fixed; width: 100%;
@@ -32,29 +32,26 @@
             display: inline-flex; justify-content: center; align-items: center;
         }
 
-        /* [핵심] 스크롤 컨테이너 */
+        /* [핵심] 표가 들어가는 공간 설정 */
         .outer-wrapper {
-            display: flex; 
-            position: relative;
-            background: #f0f0f0; /* 배경색을 어둡게 하여 표가 끝나는 지점을 명확히 함 */
-            overflow-x: auto; 
-            overflow-y: hidden;
-            height: calc(100vh - 95px); 
-            width: 100%;
+            display: flex; position: relative;
+            background: #f0f0f0; /* 스크롤 가능 영역의 배경 */
+            overflow-x: auto; overflow-y: hidden;
+            height: calc(100vh - 95px); width: 100%;
         }
 
-        /* 시간 칼럼 고정 */
+        /* 시간 칼럼 (좌측 고정) */
         .time-column {
             width: 55px; flex-shrink: 0;
-            background-color: #fff; border-right: 1px solid #ddd;
+            background-color: #ffffff; border-right: 1px solid #ddd;
             position: sticky; left: 0; z-index: 501;
             height: calc(35px + (24px * 15)); 
         }
-        .time-header { height: 35px; border-bottom: 1px solid #ddd; }
+        .time-header { height: 35px; border-bottom: 1px solid #ddd; background: #ffffff; }
         .time-slot-sync {
             height: 24px; display: flex; align-items: flex-start;
             justify-content: flex-end; padding-right: 8px;
-            position: relative; box-sizing: border-box;
+            position: relative; box-sizing: border-box; background: #ffffff;
         }
         .time-slot-sync span { font-size: 8pt; color: #444; font-weight: 600; transform: translateY(-5px); }
         .time-slot-sync::after {
@@ -62,48 +59,45 @@
             width: 6px; height: 1px; background-color: #bbb;
         }
 
-        /* [수정] 캘린더 컨테이너: 너비를 내용물에 딱 맞게 제한하여 잔선 방지 */
+        /* [수정] 캘린더 본체 공간 배경을 흰색으로 고정 */
         .calendar-container {
-            display: inline-flex; 
-            position: relative; 
-            height: fit-content;
-            background: #fff; /* 표가 있는 부분만 흰색 배경 */
+            display: inline-flex; position: relative; height: fit-content;
+            background-color: #ffffff; /* 표 전체 배경 흰색 */
         }
 
-        /* 현재 시간 빨간 선 */
+        /* 실시간 빨간 선 */
         #now-indicator-line {
             position: absolute; left: 0; width: 100%; height: 1px;
             background-color: #ff0000; z-index: 100; pointer-events: none; display: none;
         }
 
-        /* [수정] 칼럼 박스 너비 강제 고정 */
+        /* 각 칼럼 박스 */
         .calendar-box { 
-            width: 75px; 
-            max-width: 75px; /* 너비가 늘어나지 않도록 강제 */
-            flex-shrink: 0; 
-            border-right: 1px solid #e5e5e5; 
-            box-sizing: border-box; 
-            overflow: hidden; /* 내부 선이 삐져나오지 못하게 차단 */
+            width: 75px; max-width: 75px; flex-shrink: 0; 
+            border-right: 1px solid #e5e5e5; box-sizing: border-box; 
+            overflow: hidden; background-color: #ffffff; /* 각 칸 배경 흰색 */
         }
 
         .calendar-title {
             font-size: 10px; font-weight: bold; margin: 0; 
             height: 35px; line-height: 35px; text-align: center;
-            background: #fdfdfd; border-bottom: 1px solid #ddd;
+            background: #ffffff; border-bottom: 1px solid #ddd;
         }
 
-        /* FullCalendar 내부 스타일 정밀 제어 */
-        .fc { max-width: 75px !important; } /* 캘린더 객체 너비 제한 */
+        /* FullCalendar 내부 스타일 제어 */
+        .fc { max-width: 75px !important; background-color: #ffffff !important; }
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; }
-        .fc-timegrid-slot { height: 24px !important; border-bottom: 1px solid #e5e5e5 !important; }
-        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; }
-        .event-text { font-size: 8px; color: white; padding: 1px; text-align: center; line-height: 1.1; word-break: break-all; }
-        .fc-scroller { overflow: hidden !important; }
+        .fc-timegrid-slot { height: 24px !important; border-bottom: 1px solid #e5e5e5 !important; background-color: #ffffff !important; }
         
-        /* [추정] 옅은 음영(비영업시간 등)을 강제로 제거 */
-        .fc-non-business { background: transparent !important; }
-        .fc-timegrid-bg-harness { display: none !important; }
+        /* 이벤트 스타일 및 과거 예약 음영 */
+        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; }
+        .fc-event-past { opacity: 0.45 !important; filter: grayscale(0.2); }
+        .event-text { font-size: 8px; color: white; padding: 1px; text-align: center; line-height: 1.1; word-break: break-all; }
+        
+        .fc-scroller { overflow: hidden !important; }
+        /* 옅은 음영(비영업시간 등) 강제 제거하여 순수 흰색 유지 */
+        .fc-non-business, .fc-timegrid-bg-harness, .fc-bg-layer { background: transparent !important; display: none !important; }
     </style>
 </head>
 <body>
@@ -143,7 +137,7 @@
     </div>
 
     <script>
-        // 코드 주석: test.06 이후의 잔선과 음영을 제거하기 위해 캘린더 너비를 강제로 75px로 묶고 배경 시스템을 분리했습니다. [사용자 정보 반영]
+        // 주석: 표 내부의 모든 배경을 순수 흰색(#ffffff)으로 고정하여 가독성을 높였습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -154,7 +148,6 @@
             for(let i = startHour; i <= endHour; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'time-slot-sync';
-                if (i === startHour) slot.classList.add('is-first-slot');
                 slot.innerHTML = `<span>${i.toString().padStart(2, '0')}:00</span>`;
                 col.appendChild(slot);
             }
@@ -165,6 +158,7 @@
             const dayStr = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
             document.getElementById('main-date').innerText = `${dateStr} (${dayStr})`;
             updateRedLine();
+            calendars.forEach(cal => cal.refetchEvents());
         }
 
         function updateRedLine() {
@@ -225,10 +219,18 @@
                     slotDuration: '01:00:00',
                     allDaySlot: false,
                     contentHeight: 'auto',
-                    handleWindowResize: false, /* 리사이즈 시 너비 재계산 방지 */
+                    handleWindowResize: false,
                     headerToolbar: false,
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
+                    
+                    eventDidMount: function(info) {
+                        const now = new Date();
+                        if (info.event.end < now) {
+                            info.el.classList.add('fc-event-past');
+                        }
+                    },
+
                     eventContent: function(arg) {
                         let domNode = document.createElement('div');
                         domNode.className = 'event-text';
