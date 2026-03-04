@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (Final Refined)</title>
+    <title>3D Printer Schedule (Fixed Loop)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
@@ -49,13 +49,12 @@
             height: 24px; display: flex; align-items: flex-start;
             justify-content: flex-end; padding-right: 8px; position: relative;
         }
-        /* 시간 칼럼 폰트 색상 강화 (#444) */
         .time-slot-sync span { 
             font-size: 7pt; color: #444; font-weight: 500; 
             transform: translateY(-6px);
         }
         
-        /* 시간 칼럼 회색 작대기(구분선) 복구 */
+        /* 시간 칼럼 회색 작대기 */
         .time-slot-sync::after {
             content: ""; position: absolute; right: 0; top: 0;
             width: 5px; height: 1px; background-color: #ccc;
@@ -78,24 +77,22 @@
             text-align: center; background: #ffffff; border-bottom: 1px solid #ddd; margin: 0;
         }
 
-        /* FullCalendar 내부 슬롯 스타일 */
         .fc-timegrid-slot { height: 24px !important; border-bottom: 1px solid #e5e5e5 !important; background-color: #ffffff !important; }
         .fc { max-width: 75px !important; background-color: transparent !important; }
         .fc-col-header, .fc-timegrid-slot-label { display: none !important; }
-        
         .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; }
 
         /* [핵심] 투명도 없이 밝기(brightness)만 이용한 만료 처리 */
         .fc-event-past { 
             filter: brightness(1.7) saturate(0.8) !important; 
-            opacity: 1 !important; /* 투명도 고정 */
+            opacity: 1 !important;
         }
         
         /* 예약 건 내 텍스트 볼드체 해제 */
         .event-text { 
             font-size: 8px; color: white; padding: 2px; 
             text-align: center; line-height: 1.2; 
-            font-weight: normal; /* 볼드 해제 */
+            font-weight: normal; 
             word-break: break-all;
         }
         .fc-event-past .event-text { color: #ffffff; text-shadow: 0px 0px 1px rgba(0,0,0,0.1); }
@@ -130,7 +127,7 @@
     </div>
 
     <script>
-        // 주석: 시각 칼럼 폰트 강화, 볼드체 해제, 밝기 기반 실시간 음영 업데이트를 구현했습니다. [사용자 정보 반영]
+        // 주석: 무한 루프 문제를 해결하기 위해 상태가 변할 때만 이벤트를 갱신하도록 로직을 수정했습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -144,14 +141,18 @@
             }
         }
 
-        // 실시간 음영 상태 업데이트 함수
+        // [수정된 핵심 함수] 무한 루프 방지 조건 추가
         function updateRealTimeShading() {
             const now = new Date();
             calendars.forEach(calendar => {
                 calendar.getEvents().forEach(event => {
-                    if (event.end < now) {
+                    const isPast = event.end < now;
+                    const hasClass = event.classNames.includes('fc-event-past');
+
+                    // 상태가 변경될 때만 setProp을 실행하여 무한 재렌더링 방지
+                    if (isPast && !hasClass) {
                         event.setProp('classNames', ['fc-event-past']);
-                    } else {
+                    } else if (!isPast && hasClass) {
                         event.setProp('classNames', []);
                     }
                 });
@@ -226,7 +227,7 @@
                             info.el.classList.add('fc-event-past');
                         }
                     },
-                    // 데이터 로딩 완료 시점에 실시간 상태 업데이트 호출
+                    // 데이터를 처음 로드할 때 한 번 실행
                     eventsSet: function() {
                         updateRealTimeShading();
                     },
@@ -243,16 +244,11 @@
 
             updateMainDate();
 
-            // 1분마다 현재 시간 및 이벤트 음영 실시간 업데이트
+            // 1분마다 체크하여 '실시간으로' 만료된 건만 음영 처리
             setInterval(() => {
                 updateRedLine();
                 updateRealTimeShading();
             }, 60000);
-
-            setTimeout(() => {
-                updateRedLine();
-                updateRealTimeShading();
-            }, 1000);
         });
     </script>
 </body>
