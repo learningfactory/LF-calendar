@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Read-Only)</title>
+    <title>3D Printer Schedule (14 Slots)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
@@ -12,60 +12,53 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 20px; }
         
-        /* 캘린더들을 가로로 나열하는 컨테이너 */
         .calendar-container {
             display: flex;
-            overflow-x: auto;
+            overflow-x: auto; /* 14개가 넘어가면 가로 스크롤 발생 */
             padding: 10px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            gap: 2px; /* 칼럼 사이 아주 미세한 간격 */
         }
         
         .calendar-box {
             display: inline-block;
-            flex-shrink: 0; /* 너비 고정 */
+            flex-shrink: 0; 
         }
 
         .calendar-title {
-            font-size: 15px;
+            font-size: 13px; /* 항목이 많아졌으므로 폰트 약간 축소 */
             font-weight: bold;
-            padding: 10px 0;
+            padding: 8px 0;
             text-align: center;
-            background: #eee;
+            background: #f1f1f1;
             margin: 0;
             border: 1px solid #ddd;
+            border-bottom: none;
         }
 
         .calendar {
-            width: 130px; 
+            width: 120px; /* 개별 너비를 살짝 줄여 더 많이 보이게 조절 */
             height: 600px; 
             border: 1px solid #ddd;
         }
 
-        /* 날짜 컨트롤 및 대문 날짜 스타일 */
         .date-controls { text-align: center; margin-bottom: 25px; }
         #main-date { font-size: 24px; font-weight: bold; color: #333; display: block; margin-bottom: 15px; }
         .date-controls button { 
-            padding: 8px 15px; 
-            margin: 0 5px; 
-            cursor: pointer; 
-            border-radius: 4px; 
-            border: 1px solid #007bff; 
-            background: #fff; 
-            color: #007bff;
-            font-weight: bold;
-            transition: 0.2s;
+            padding: 8px 15px; margin: 0 5px; cursor: pointer; border-radius: 4px; 
+            border: 1px solid #007bff; background: #fff; color: #007bff; font-weight: bold;
         }
         .date-controls button:hover { background: #007bff; color: #fff; }
 
-        /* FullCalendar 내부 UI 조정 */
-        .fc-col-header { display: none; } /* 요일 제거 */
-        .fc-timegrid-slot-label { display: none !important; } /* 기본 시간 라벨 숨김 */
+        /* FullCalendar UI 숨김 처리 */
+        .fc-col-header { display: none; } 
+        .fc-timegrid-slot-label { display: none !important; } 
         .fc-timegrid-slot { height: 25px !important; } 
-        .fc-event { border: none !important; cursor: default !important; } /* 커서 모양 화살표로 고정 */
+        .fc-event { border: none !important; cursor: default !important; } 
         
-        /* 첫 번째 칼럼에만 시간축 표시 */
+        /* 첫 번째 칼럼(No.01)에만 시간 표시 */
         .calendar-box:first-child .fc-timegrid-slot-label { 
             display: block !important; 
             width: 50px; 
@@ -73,16 +66,9 @@
             text-align: right;
             padding-right: 5px;
         }
-        .calendar-box:first-child .calendar { width: 180px; }
+        .calendar-box:first-child .calendar { width: 170px; }
 
-        /* 일정 텍스트 스타일 */
-        .event-text {
-            font-size: 11px;
-            color: white;
-            padding: 2px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .event-text { font-size: 11px; color: white; padding: 2px; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
@@ -103,12 +89,13 @@
         <div class="calendar-box"><h3 class="calendar-title">No.06</h3><div id="calendar6" class="calendar"></div></div>
         <div class="calendar-box"><h3 class="calendar-title">No.07</h3><div id="calendar7" class="calendar"></div></div>
         <div class="calendar-box"><h3 class="calendar-title">No.08</h3><div id="calendar8" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.01</h3><div id="calendar8" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.02</h3><div id="calendar8" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.03</h3><div id="calendar8" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.04</h3><div id="calendar8" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.05</h3><div id="calendar8" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.06</h3><div id="calendar8" class="calendar"></div></div>
+        
+        <div class="calendar-box"><h3 class="calendar-title">test.01</h3><div id="calendar9" class="calendar"></div></div>
+        <div class="calendar-box"><h3 class="calendar-title">test.02</h3><div id="calendar10" class="calendar"></div></div>
+        <div class="calendar-box"><h3 class="calendar-title">test.03</h3><div id="calendar11" class="calendar"></div></div>
+        <div class="calendar-box"><h3 class="calendar-title">test.04</h3><div id="calendar12" class="calendar"></div></div>
+        <div class="calendar-box"><h3 class="calendar-title">test.05</h3><div id="calendar13" class="calendar"></div></div>
+        <div class="calendar-box"><h3 class="calendar-title">test.06</h3><div id="calendar14" class="calendar"></div></div>
     </div>
 
     <script>
@@ -135,6 +122,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateMainDate();
             
+            // 데이터 배열: 각 요소의 ID와 HTML의 div ID가 정확히 매칭됨
             const calendarData = [
                 { id: "learningfactory01@gmail.com", element: "calendar1", color: "#34A853" },
                 { id: "learningfactory11@gmail.com", element: "calendar2", color: "#34A853" },
@@ -144,16 +132,18 @@
                 { id: "learningfactory06@gmail.com", element: "calendar6", color: "#34A853" },
                 { id: "learningfactory10@gmail.com", element: "calendar7", color: "#34A853" },
                 { id: "learningfactory08@gmail.com", element: "calendar8", color: "#34A853" },
-                { id: "learningfactory04@gmail.com", element: "calendar9", color: "#34A853" },
-                { id: "learningfactory09@gmail.com", element: "calendar10", color: "#34A853" },
-                { id: "learningfactory02@gmail.com", element: "calendar11", color: "#34A853" },
-                { id: "learningfactory07@gmail.com", element: "calendar12", color: "#34A853" },
-                { id: "learningfactory12@gmail.com", element: "calendar13", color: "#34A853" },
-                { id: "learningfactory14@gmail.com", element: "calendar14", color: "#34A853" }
+                { id: "learningfactory04@gmail.com", element: "calendar9", color: "#4285F4" }, // 색상을 살짝 구분함
+                { id: "learningfactory09@gmail.com", element: "calendar10", color: "#4285F4" },
+                { id: "learningfactory02@gmail.com", element: "calendar11", color: "#4285F4" },
+                { id: "learningfactory07@gmail.com", element: "calendar12", color: "#4285F4" },
+                { id: "learningfactory12@gmail.com", element: "calendar13", color: "#4285F4" },
+                { id: "learningfactory14@gmail.com", element: "calendar14", color: "#4285F4" }
             ];
 
             calendarData.forEach((cal) => {
                 let calendarEl = document.getElementById(cal.element);
+                if (!calendarEl) return; // 혹시라도 ID를 못 찾으면 건너뜀
+
                 let calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'timeGridDay',
                     timeZone: 'Asia/Seoul',
@@ -162,37 +152,15 @@
                     allDaySlot: false,
                     height: "auto",
                     headerToolbar: false,
-                    editable: false, // 마우스 드래그 수정 불가
-
-                    // 구글 캘린더 API 설정
+                    editable: false,
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
 
-                    // [핵심 보안 1] 왼쪽 클릭 시 구글 페이지 이동 방지
-                    eventClick: function(info) {
-                        info.jsEvent.preventDefault();
-                    },
-
-                    // [핵심 보안 2] 일정 요소가 화면에 나타날 때 링크 속성(href) 강제 제거
+                    eventClick: function(info) { info.jsEvent.preventDefault(); },
+                    
                     eventDidMount: function(info) {
-                        // info.el은 실제 <a> 태그 요소입니다.
-                        info.el.removeAttribute('href'); // 링크 주소 삭제 (우클릭 새 탭 열기 방지)
-                        info.el.style.pointerEvents = 'auto'; // 이벤트는 받되 링크 기능만 상실
+                        info.el.removeAttribute('href'); // 링크 속성 제거 (우클릭 차단)
                     },
 
-                    // [핵심 보안 3] 내용을 순수 텍스트로만 구성 (기존 링크 구조 무시)
                     eventContent: function(arg) {
-                        let domNode = document.createElement('div');
-                        domNode.classList.add('event-text');
-                        domNode.innerText = arg.event.title; // 제목만 텍스트로 삽입
-                        return { domNodes: [domNode] };
-                    }
-                });
-                calendar.render();
-                calendars.push(calendar);
-            });
-        });
-    </script>
-</body>
-</html>
-
+                        let domNode = document.createElement
