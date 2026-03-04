@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (Final Design)</title>
+    <title>3D Printer Schedule (Fixed Shading)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* [전체] 배경을 흰색으로 통일 및 스크롤 설정 */
+        /* [전체] 순백색 배경 및 스크롤 설정 */
         html, body { 
             font-family: 'Segoe UI', sans-serif; 
             background-color: #ffffff; 
@@ -32,7 +32,6 @@
             display: inline-flex; justify-content: center; align-items: center;
         }
 
-        /* [수정] 회색 영역 제거를 위해 배경을 흰색으로 고정 */
         .outer-wrapper {
             display: flex; position: relative;
             background: #ffffff; 
@@ -40,9 +39,9 @@
             height: calc(100vh - 95px); width: 100%;
         }
 
-        /* 시간 칼럼 (좌측 고정) */
+        /* 시간 칼럼 */
         .time-column {
-            width: 55px; flex-shrink: 0;
+            width: 45px; flex-shrink: 0;
             background-color: #ffffff; border-right: 1px solid #ddd;
             position: sticky; left: 0; z-index: 501;
             height: calc(35px + (24px * 15)); 
@@ -50,16 +49,18 @@
         .time-header { height: 35px; border-bottom: 1px solid #ddd; background: #ffffff; }
         .time-slot-sync {
             height: 24px; display: flex; align-items: flex-start;
-            justify-content: flex-end; padding-right: 8px;
+            justify-content: flex-end; padding-right: 6px;
             position: relative; box-sizing: border-box; background: #ffffff;
         }
-        .time-slot-sync span { font-size: 8pt; color: #444; font-weight: 600; transform: translateY(-5px); }
+        .time-slot-sync span { 
+            font-size: 7pt; color: #666; font-weight: 500; 
+            transform: translateY(-6px);
+        }
         .time-slot-sync::after {
-            content: ""; position: absolute; right: 0; top: 2px;
-            width: 6px; height: 1px; background-color: #bbb;
+            content: ""; position: absolute; right: 0; top: 0px;
+            width: 4px; height: 1px; background-color: #ccc;
         }
 
-        /* 캘린더 컨테이너 */
         .calendar-container {
             display: inline-flex; position: relative; height: fit-content;
             background-color: #ffffff;
@@ -67,11 +68,10 @@
 
         /* 실시간 빨간 선 */
         #now-indicator-line {
-            position: absolute; left: 0; width: 100%; height: 2px; /* 선을 조금 더 잘 보이게 2px로 수정 */
+            position: absolute; left: 0; width: 100%; height: 2px;
             background-color: #ff0000; z-index: 100; pointer-events: none; display: none;
         }
 
-        /* 각 칼럼 박스 */
         .calendar-box { 
             width: 75px; max-width: 75px; flex-shrink: 0; 
             border-right: 1px solid #e5e5e5; box-sizing: border-box; 
@@ -84,23 +84,23 @@
             background: #ffffff; border-bottom: 1px solid #ddd;
         }
 
-        /* [수정] 오늘 날짜의 배경색을 연한 노란색으로 설정 */
+        /* [수정] 모든 배경을 순백색으로 통일 */
         .fc-timegrid-slot { 
             height: 24px !important; 
             border-bottom: 1px solid #e5e5e5 !important; 
-            background-color: #fffff0 !important; /* lightyellow */
+            background-color: #ffffff !important; 
         }
         
-        /* FullCalendar 기본 설정 */
         .fc { max-width: 75px !important; background-color: transparent !important; }
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; }
         
-        /* [수정] 만료된 예약건 음영 처리 스타일 */
         .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; }
+
+        /* [핵심] 만료된 예약건 스타일: 탁한 명암 처리 */
         .fc-event-past { 
-            opacity: 0.4 !important; /* 투명도를 낮춰서 흐리게 표기 */
-            filter: grayscale(0.5) brightness(0.8); /* 회색조 및 밝기 감소 */
+            filter: grayscale(0.8) brightness(0.7) !important; /* 색을 죽이고 어둡게 만듦 */
+            opacity: 0.9 !important; /* 너무 투명해지지 않게 유지 */
         }
         
         .event-text { font-size: 8px; color: white; padding: 1px; text-align: center; line-height: 1.1; word-break: break-all; }
@@ -145,7 +145,7 @@
     </div>
 
     <script>
-        // 코드 주석: 배경을 흰색으로 정돈하고, 오늘 날짜는 노란색, 지난 예약은 음영 처리하도록 구현했습니다.
+        // 주석: 현재 시각 이전의 모든 예약(오늘 건 포함)을 탁한 명암으로 처리하고 배경을 순백색으로 변경했습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -166,7 +166,7 @@
             const dayStr = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
             document.getElementById('main-date').innerText = `${dateStr} (${dayStr})`;
             updateRedLine();
-            // 날짜 변경 시 만료 음영을 다시 계산하기 위해 refetch
+            // 날짜 변경 시 만료 여부를 다시 판단하여 렌더링
             calendars.forEach(cal => cal.refetchEvents());
         }
 
@@ -232,10 +232,10 @@
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
                     
-                    // [핵심] 현재 시각 기준으로 지난 예약건 음영 처리
+                    // [핵심 로직] 렌더링 시 현재 시각과 비교하여 과거 예약에 클래스 부여
                     eventDidMount: function(info) {
                         const now = new Date();
-                        // 이벤트 종료 시간이 현재 시간보다 이전이면 클래스 추가
+                        // 오늘 날짜의 지난 시간대 예약도 포함하기 위해 종료 시각(end)과 비교
                         if (info.event.end < now) {
                             info.el.classList.add('fc-event-past');
                         }
@@ -251,6 +251,13 @@
                 calendar.render();
                 calendars.push(calendar);
             });
+            
+            // 1분마다 현재 시각을 체크하여 음영과 빨간 선을 업데이트
+            setInterval(() => {
+                updateRedLine();
+                calendars.forEach(cal => cal.refetchEvents());
+            }, 60000);
+
             setTimeout(updateRedLine, 500);
         });
     </script>
