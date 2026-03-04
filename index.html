@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Refined UI)</title>
+    <title>3D Printer Schedule (9pt Font)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
@@ -24,22 +24,20 @@
             width: fit-content;
         }
 
-        /* [수정] 시각 칼럼 - 왼쪽, 위, 아래 테두리 제거 */
+        /* 시각 칼럼 스타일 */
         .time-column {
-            width: 60px; /* 조금 더 빵빵하게 너비 조정 */
+            width: 60px;
             flex-shrink: 0;
-            background-color: transparent; /* 배경을 투명하게 하여 테두리 부재 강조 */
-            border-right: 1px solid #ddd; /* 오른쪽 세로선만 유지 */
+            background-color: transparent;
+            border-right: 1px solid #ddd;
         }
 
-        /* 시각 헤더 테두리 제거 */
         .time-header {
             height: 35px; 
             background: transparent;
             box-sizing: border-box;
         }
 
-        /* [수정] 시각 슬롯 - 가로 보조선(border) 제거 */
         .time-slot-sync {
             height: 24px;
             display: flex;
@@ -47,37 +45,35 @@
             justify-content: flex-end;
             padding-right: 12px;
             box-sizing: border-box;
-            border: none; /* 슬롯 자체의 보조선 제거 */
+            border: none;
             position: relative;
         }
 
-        /* 시각 숫자 스타일 */
+        /* [수정] 시각 폰트 9pt 적용 및 정렬 최적화 */
         .time-slot-sync span {
-            font-size: 11px; /* 약간 더 크게 */
-            color: #444; /* 조금 더 진하게 */
+            font-size: 9pt; /* 9포인트로 축소 */
+            color: #444;
             font-weight: 600;
-            transform: translateY(-9px); 
+            /* 폰트가 작아진 만큼 중앙 정렬을 위해 위치 미세 조정 */
+            transform: translateY(-6px); 
         }
 
-        /* [수정] 회색 작대기 (Tick) - 1px 하단 이동 */
+        /* 회색 작대기 (Tick) */
         .time-slot-sync::after {
             content: "";
             position: absolute;
             right: 0;
-            top: 1px; /* 1px 아래로 이동 */
+            top: 2px;
             width: 8px;
             height: 1px;
-            background-color: #bbb; /* 작대기도 조금 더 진하게 */
+            background-color: #bbb;
         }
-
-        /* 09:00 슬롯 상단 작대기 제거 */
-        .is-first-slot::after { display: none !important; }
 
         /* 캘린더 컨테이너 */
         .calendar-container {
             display: flex;
             background-color: white;
-            border: 1px solid #ddd; /* 본체만 테두리 유지 */
+            border: 1px solid #ddd;
             position: relative;
         }
 
@@ -89,17 +85,15 @@
             box-sizing: border-box;
         }
 
-        /* [수정] FullCalendar 내부 보조선 선명도 강화 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; }
         .fc-timegrid-slot { 
             height: 24px !important; 
-            border-bottom: 1px solid #e5e5e5 !important; /* 살짝 더 진한 회색 */
+            border-bottom: 1px solid #e5e5e5 !important;
             box-sizing: border-box;
         }
         .fc-theme-standard td, .fc-theme-standard th { border-top: none !important; }
 
-        /* 현재 시각 지시선 */
         #now-indicator-line {
             position: absolute;
             left: 0; right: 0; height: 1px;
@@ -107,7 +101,6 @@
             pointer-events: none; display: none;
         }
 
-        /* 이벤트 스타일 */
         .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; }
         .event-text { font-size: 9px; color: white; padding: 2px; text-align: center; line-height: 1.1; }
         .fc-scroller { overflow: hidden !important; }
@@ -125,7 +118,7 @@
     <div class="dashboard-wrapper">
         <div class="time-column" id="time-column">
             <div class="time-header"></div>
-            </div>
+        </div>
 
         <div class="calendar-container">
             <div id="now-indicator-line"></div>
@@ -148,7 +141,7 @@
     </div>
 
     <script>
-        // 코드 가독성을 위해 디자인 변경점에 주석을 달았습니다. [사용자 정보 반영]
+        // 주석: 시각 폰트를 9pt로 줄이고 위치를 보정했습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -160,12 +153,6 @@
             for(let i = startHour; i <= endHour; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'time-slot-sync';
-                
-                // 09:00 상단 작대기 제거 클래스
-                if (i === startHour) {
-                    slot.classList.add('is-first-slot');
-                }
-
                 slot.innerHTML = `<span>${i.toString().padStart(2, '0')}:00</span>`;
                 col.appendChild(slot);
             }
