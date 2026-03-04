@@ -3,47 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Final Polish)</title>
+    <title>3D Printer Schedule (Sticky UI)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* 기본 레이아웃 */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px; overflow-x: auto; }
-        .date-controls { text-align: center; padding: 10px 0; }
-        .main-date { font-size: 18px; font-weight: bold; margin-right: 15px; }
-        .date-controls button { width: 65px; height: 26px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; }
-
-        .dashboard-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            margin: 0 auto;
-            width: fit-content;
+        /* 기본 설정 */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 0; }
+        
+        /* [수정] 날짜와 버튼 줄바꿈 배치 */
+        .header-section {
+            text-align: center;
+            padding: 15px 0;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .main-date { 
+            display: block; /* 줄바꿈을 위해 블록 요소로 변경 */
+            font-size: 20px; 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+        }
+        .date-controls { display: block; }
+        .date-controls button { 
+            width: 70px; height: 30px; font-size: 12px; 
+            cursor: pointer; border: 1px solid #ccc; background: #fff; 
+            margin: 0 3px; border-radius: 4px;
         }
 
-        /* 시각 칼럼 */
+        /* [핵심] 레이아웃 구조: 시간 칼럼 고정 및 슬롯 스크롤 */
+        .outer-wrapper {
+            display: flex;
+            position: relative;
+            background: #fff;
+            overflow-x: auto; /* 전체 영역 스크롤 허용 */
+        }
+
+        /* [핵심] 시간 칼럼 왼쪽 고정 */
         .time-column {
-            width: 60px;
+            width: 55px;
             flex-shrink: 0;
-            background-color: transparent;
+            background-color: #fdfdfd;
             border-right: 1px solid #ddd;
-            overflow: hidden;
+            position: sticky;
+            left: 0; /* 왼쪽 끝에 고정 */
+            z-index: 500;
             height: calc(35px + (24px * 15));
         }
 
-        .time-header { height: 35px; background: transparent; box-sizing: border-box; }
+        .time-header { height: 35px; border-bottom: 1px solid #ddd; }
 
         .time-slot-sync {
             height: 24px;
             display: flex;
             align-items: flex-start;
             justify-content: flex-end;
-            padding-right: 12px;
+            padding-right: 8px;
             box-sizing: border-box;
-            border: none;
             position: relative;
         }
 
@@ -59,22 +80,25 @@
             position: absolute;
             right: 0;
             top: 2px;
-            width: 8px;
+            width: 6px;
             height: 1px;
             background-color: #bbb;
         }
-
         .is-first-slot::after { top: 0 !important; }
 
-        /* 캘린더 본체 */
+        /* 캘린더 슬롯 영역 (좌우 스크롤되는 부분) */
         .calendar-container {
             display: flex;
-            background-color: white;
-            border: 1px solid #ddd;
             position: relative;
+            flex-grow: 1;
         }
 
-        .calendar-box { width: 75px; flex-shrink: 0; border-right: 1px solid #e5e5e5; }
+        .calendar-box { 
+            width: 80px; /* 모바일 가독성을 위해 살짝 키움 */
+            flex-shrink: 0; 
+            border-right: 1px solid #e5e5e5; 
+        }
+        
         .calendar-title {
             font-size: 11px; font-weight: bold; margin: 0; 
             height: 35px; line-height: 35px; text-align: center;
@@ -82,6 +106,7 @@
             box-sizing: border-box;
         }
 
+        /* FullCalendar 스타일 보정 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; }
         .fc-timegrid-slot { 
@@ -89,24 +114,18 @@
             border-bottom: 1px solid #e5e5e5 !important;
             box-sizing: border-box;
         }
-        .fc-theme-standard td, .fc-theme-standard th { border-top: none !important; }
 
-        /* [수정] 이벤트 스타일 및 클릭 차단 */
+        /* 이벤트 클릭 방지 및 폰트 축소 */
         .fc-event { 
             border: none !important; 
             border-radius: 4px !important; 
             margin: 1px !important; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            /* 클릭 및 우클릭 등 모든 마우스 상호작용 차단 */
             pointer-events: none !important; 
-            cursor: default !important;
         }
-        
         .event-text { 
-            /* [수정] 폰트 크기 1pt 축소 (기존 9px -> 8px) */
             font-size: 8px; 
             color: white; 
-            padding: 2px; 
+            padding: 1px; 
             text-align: center; 
             line-height: 1.1;
             word-break: break-all;
@@ -118,26 +137,28 @@
             background-color: #ff0000; z-index: 100;
             pointer-events: none; display: none;
         }
-
         .fc-scroller { overflow: hidden !important; }
     </style>
 </head>
 <body>
 
-    <div class="date-controls">
+    <div class="header-section">
         <span class="main-date" id="main-date"></span>
-        <button onclick="changeDate(-1)">◀ Prev</button>
-        <button onclick="goToToday()">Today</button>
-        <button onclick="changeDate(1)">Next ▶</button>
+        <div class="date-controls">
+            <button onclick="changeDate(-1)">◀ Prev</button>
+            <button onclick="goToToday()">Today</button>
+            <button onclick="changeDate(1)">Next ▶</button>
+        </div>
     </div>
     
-    <div class="dashboard-wrapper">
+    <div class="outer-wrapper">
         <div class="time-column" id="time-column">
             <div class="time-header"></div>
         </div>
 
         <div class="calendar-container">
             <div id="now-indicator-line"></div>
+            
             <div class="calendar-box"><h3 class="calendar-title">No.01</h3><div id="calendar1" class="calendar"></div></div>
             <div class="calendar-box"><h3 class="calendar-title">No.02</h3><div id="calendar2" class="calendar"></div></div>
             <div class="calendar-box"><h3 class="calendar-title">No.03</h3><div id="calendar3" class="calendar"></div></div>
@@ -156,7 +177,7 @@
     </div>
 
     <script>
-        // 요청하신 대로 상호작용 차단 및 폰트 크기 수정을 반영했습니다. [사용자 정보 반영]
+        // 코드 주석: 날짜 버튼 줄바꿈 및 좌측 시간 칼럼 고정 기능을 구현했습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -164,7 +185,6 @@
             const col = document.getElementById('time-column');
             const startHour = 9;
             const endHour = 23;
-
             for(let i = startHour; i <= endHour; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'time-slot-sync';
@@ -196,8 +216,6 @@
                 } else { line.style.display = "none"; }
             } else { line.style.display = "none"; }
         }
-
-        setInterval(updateRedLine, 60000);
 
         function changeDate(days) {
             currentDate.setDate(currentDate.getDate() + days);
@@ -244,11 +262,6 @@
                     headerToolbar: false,
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
-                    // 상호작용 관련 기본 설정 해제
-                    editable: false,
-                    selectable: false,
-                    eventStartEditable: false,
-                    eventDurationEditable: false,
                     eventContent: function(arg) {
                         let domNode = document.createElement('div');
                         domNode.className = 'event-text';
@@ -264,4 +277,3 @@
     </script>
 </body>
 </html>
-
