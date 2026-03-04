@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
+        /* 기본 레이아웃 */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px; overflow-x: auto; }
-        
         .date-controls { text-align: center; padding: 10px 0; }
         .main-date { font-size: 18px; font-weight: bold; margin-right: 15px; }
         .date-controls button { width: 65px; height: 26px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; }
@@ -24,21 +24,17 @@
             width: fit-content;
         }
 
-        /* [수정] 시각 칼럼 - 23시 아래로 선이 삐져나오지 않도록 높이 제한 */
+        /* 시각 칼럼 */
         .time-column {
             width: 60px;
             flex-shrink: 0;
             background-color: transparent;
             border-right: 1px solid #ddd;
-            overflow: hidden; /* 하단으로 삐져나가는 선 차단 */
-            height: calc(35px + (24px * 15)); /* 헤더(35) + 슬롯15개(24*15) */
+            overflow: hidden;
+            height: calc(35px + (24px * 14));
         }
 
-        .time-header {
-            height: 35px; 
-            background: transparent;
-            box-sizing: border-box;
-        }
+        .time-header { height: 35px; background: transparent; box-sizing: border-box; }
 
         .time-slot-sync {
             height: 24px;
@@ -58,7 +54,6 @@
             transform: translateY(-5px); 
         }
 
-        /* 기본 회색 작대기 (top: 2px) */
         .time-slot-sync::after {
             content: "";
             position: absolute;
@@ -69,11 +64,9 @@
             background-color: #bbb;
         }
 
-        /* 09:00 작대기 위치 보정 */
-        .is-first-slot::after {
-            top: 0 !important;
-        }
+        .is-first-slot::after { top: 0 !important; }
 
+        /* 캘린더 본체 */
         .calendar-container {
             display: flex;
             background-color: white;
@@ -98,19 +91,25 @@
         }
         .fc-theme-standard td, .fc-theme-standard th { border-top: none !important; }
 
-        /* [롤백] 슬롯 여백 및 둥근 모서리 복구 */
+        /* [수정] 이벤트 스타일 및 클릭 차단 */
         .fc-event { 
             border: none !important; 
-            border-radius: 4px !important; /* 이전의 둥근 디자인으로 복구 */
-            margin: 1px !important; /* 여백 다시 추가 */
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* 입체감 살짝 추가 */
+            border-radius: 4px !important; 
+            margin: 1px !important; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            /* 클릭 및 우클릭 등 모든 마우스 상호작용 차단 */
+            pointer-events: none !important; 
+            cursor: default !important;
         }
+        
         .event-text { 
-            font-size: 9px; 
+            /* [수정] 폰트 크기 1pt 축소 (기존 9px -> 8px) */
+            font-size: 8px; 
             color: white; 
             padding: 2px; 
             text-align: center; 
             line-height: 1.1;
+            word-break: break-all;
         }
         
         #now-indicator-line {
@@ -135,11 +134,10 @@
     <div class="dashboard-wrapper">
         <div class="time-column" id="time-column">
             <div class="time-header"></div>
-            </div>
+        </div>
 
         <div class="calendar-container">
             <div id="now-indicator-line"></div>
-            
             <div class="calendar-box"><h3 class="calendar-title">No.01</h3><div id="calendar1" class="calendar"></div></div>
             <div class="calendar-box"><h3 class="calendar-title">No.02</h3><div id="calendar2" class="calendar"></div></div>
             <div class="calendar-box"><h3 class="calendar-title">No.03</h3><div id="calendar3" class="calendar"></div></div>
@@ -158,7 +156,7 @@
     </div>
 
     <script>
-        // 요청하신 대로 슬롯 디자인을 이전 상태로 롤백하고 하단 선을 정리했습니다.
+        // 요청하신 대로 상호작용 차단 및 폰트 크기 수정을 반영했습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -171,7 +169,6 @@
                 const slot = document.createElement('div');
                 slot.className = 'time-slot-sync';
                 if (i === startHour) slot.classList.add('is-first-slot');
-
                 slot.innerHTML = `<span>${i.toString().padStart(2, '0')}:00</span>`;
                 col.appendChild(slot);
             }
@@ -247,6 +244,11 @@
                     headerToolbar: false,
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
+                    // 상호작용 관련 기본 설정 해제
+                    editable: false,
+                    selectable: false,
+                    eventStartEditable: false,
+                    eventDurationEditable: false,
                     eventContent: function(arg) {
                         let domNode = document.createElement('div');
                         domNode.className = 'event-text';
