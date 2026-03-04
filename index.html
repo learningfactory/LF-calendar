@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (Natural Shading)</title>
+    <title>3D Printer Schedule (Final Refined)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* 기본 레이아웃 및 순백색 배경 */
+        /* [전체] 배경 순백색 및 고정 레이아웃 */
         html, body { 
             font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif; 
             background-color: #ffffff; margin: 0; padding: 0; 
@@ -23,19 +23,23 @@
             height: 95px; box-sizing: border-box;
         }
         .main-date { display: block; font-size: 18px; font-weight: bold; margin-bottom: 8px; }
-        .date-controls { display: flex; justify-content: center; align-items: center; gap: 6px; }
+        
+        /* [사용자 설정] 날짜 변경 버튼 줄바꿈 처리 */
+        .date-controls { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .btn-group { display: flex; gap: 6px; }
         .date-controls button { 
             width: 70px; height: 30px; font-size: 11px; cursor: pointer;
             border: 1px solid #ccc; background: #fff; border-radius: 4px;
         }
 
+        /* [사용자 설정] 캘린더 프레임 높이 600px */
         .outer-wrapper {
             display: flex; position: relative; background: #ffffff; 
             overflow-x: auto; overflow-y: hidden;
-            height: calc(100vh - 95px); width: 100%;
+            height: 600px; width: 100%;
         }
 
-        /* 시각 칼럼 숫자 크기 축소 */
+        /* 시간 칼럼 설정 */
         .time-column {
             width: 45px; flex-shrink: 0; background-color: #ffffff; border-right: 1px solid #ddd;
             position: sticky; left: 0; z-index: 501; height: calc(35px + (24px * 15)); 
@@ -43,9 +47,19 @@
         .time-header { height: 35px; border-bottom: 1px solid #ddd; }
         .time-slot-sync {
             height: 24px; display: flex; align-items: flex-start;
-            justify-content: flex-end; padding-right: 6px; position: relative;
+            justify-content: flex-end; padding-right: 8px; position: relative;
         }
-        .time-slot-sync span { font-size: 7pt; color: #888; transform: translateY(-6px); }
+        /* 시간 칼럼 폰트 색상 강화 (#444) */
+        .time-slot-sync span { 
+            font-size: 7pt; color: #444; font-weight: 500; 
+            transform: translateY(-6px);
+        }
+        
+        /* 시간 칼럼 회색 작대기(구분선) 복구 */
+        .time-slot-sync::after {
+            content: ""; position: absolute; right: 0; top: 0;
+            width: 5px; height: 1px; background-color: #ccc;
+        }
 
         .calendar-container { display: inline-flex; position: relative; height: fit-content; background-color: #ffffff; }
 
@@ -64,21 +78,27 @@
             text-align: center; background: #ffffff; border-bottom: 1px solid #ddd; margin: 0;
         }
 
-        /* FullCalendar 내부 슬롯 순백색 */
+        /* FullCalendar 내부 슬롯 스타일 */
         .fc-timegrid-slot { height: 24px !important; border-bottom: 1px solid #e5e5e5 !important; background-color: #ffffff !important; }
         .fc { max-width: 75px !important; background-color: transparent !important; }
         .fc-col-header, .fc-timegrid-slot-label { display: none !important; }
         
-        /* 이벤트 기본 디자인 */
-        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; transition: opacity 0.3s ease; }
+        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; }
 
-        /* [핵심] 구글 캘린더 스타일의 자연스러운 과거 음영 처리 */
+        /* [핵심] 투명도 없이 밝기(brightness)만 이용한 만료 처리 */
         .fc-event-past { 
-            opacity: 0.35 !important; /* 탁해지는 필터 대신 투명도를 주어 자연스럽게 처리 */
-            filter: saturate(0.5) !important; /* 채도만 살짝 낮춤 */
+            filter: brightness(1.7) saturate(0.8) !important; 
+            opacity: 1 !important; /* 투명도 고정 */
         }
         
-        .event-text { font-size: 8px; color: white; padding: 2px; text-align: center; line-height: 1.2; font-weight: bold; }
+        /* 예약 건 내 텍스트 볼드체 해제 */
+        .event-text { 
+            font-size: 8px; color: white; padding: 2px; 
+            text-align: center; line-height: 1.2; 
+            font-weight: normal; /* 볼드 해제 */
+            word-break: break-all;
+        }
+        .fc-event-past .event-text { color: #ffffff; text-shadow: 0px 0px 1px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -86,9 +106,11 @@
     <div class="header-section">
         <span class="main-date" id="main-date"></span>
         <div class="date-controls">
-            <button onclick="changeDate(-1)">◀ Prev</button>
-            <button onclick="goToToday()">Today</button>
-            <button onclick="changeDate(1)">Next ▶</button>
+            <div class="btn-group">
+                <button onclick="changeDate(-1)">◀ Prev</button>
+                <button onclick="goToToday()">Today</button>
+                <button onclick="changeDate(1)">Next ▶</button>
+            </div>
         </div>
     </div>
     
@@ -108,7 +130,7 @@
     </div>
 
     <script>
-        // 주석: 구글 캘린더처럼 자연스러운 투명도 음영을 적용하고, 1분마다 실시간으로 과거 건을 체크하여 업데이트합니다. [사용자 정보 반영]
+        // 주석: 시각 칼럼 폰트 강화, 볼드체 해제, 밝기 기반 실시간 음영 업데이트를 구현했습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -122,21 +144,15 @@
             }
         }
 
-        // [핵심] 실시간 음영 업데이트 로직
+        // 실시간 음영 상태 업데이트 함수
         function updateRealTimeShading() {
             const now = new Date();
             calendars.forEach(calendar => {
                 calendar.getEvents().forEach(event => {
-                    // 이벤트가 현재 시간보다 이전에 끝났다면 fc-event-past 클래스 추가
                     if (event.end < now) {
-                        if (!event.classNames.includes('fc-event-past')) {
-                            event.setProp('classNames', ['fc-event-past']);
-                        }
+                        event.setProp('classNames', ['fc-event-past']);
                     } else {
-                        // 미래의 예약이면 클래스 제거
-                        if (event.classNames.includes('fc-event-past')) {
-                            event.setProp('classNames', []);
-                        }
+                        event.setProp('classNames', []);
                     }
                 });
             });
@@ -206,19 +222,18 @@
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
                     
                     eventDidMount: function(info) {
-                        const now = new Date();
-                        if (info.event.end < now) {
+                        if (info.event.end < new Date()) {
                             info.el.classList.add('fc-event-past');
                         }
                     },
-                    // 이벤트 데이터 로드 후 실시간 업데이트 호출
+                    // 데이터 로딩 완료 시점에 실시간 상태 업데이트 호출
                     eventsSet: function() {
                         updateRealTimeShading();
                     },
                     eventContent: function(arg) {
                         let domNode = document.createElement('div');
                         domNode.className = 'event-text';
-                        domNode.innerHTML = `<strong>${arg.event.title}</strong>`; 
+                        domNode.innerHTML = `${arg.event.title}`; 
                         return { domNodes: [domNode] };
                     }
                 });
@@ -228,7 +243,7 @@
 
             updateMainDate();
 
-            // 1분마다 빨간 선 위치와 예약 건의 음영 상태를 실시간 체크
+            // 1분마다 현재 시간 및 이벤트 음영 실시간 업데이트
             setInterval(() => {
                 updateRedLine();
                 updateRealTimeShading();
