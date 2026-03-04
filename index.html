@@ -2,62 +2,86 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Sticky UI)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Printer Schedule (Fixed Frame)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* 기본 설정 */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 0; }
+        /* [수정] 전체 페이지 상하 스크롤 완전 제거 */
+        html, body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #f8f9fa; 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            overflow: hidden; /* 상하 스크롤 금지 */
+            position: fixed; /* 모바일 바운스 방지 */
+            width: 100%;
+        }
         
-        /* [수정] 날짜와 버튼 줄바꿈 배치 */
+        /* 헤더 섹션 (높이 약 95px 고정) */
         .header-section {
             text-align: center;
-            padding: 15px 0;
+            padding: 12px 0;
             background: #fff;
             border-bottom: 1px solid #ddd;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            height: 95px;
+            box-sizing: border-box;
         }
         .main-date { 
-            display: block; /* 줄바꿈을 위해 블록 요소로 변경 */
-            font-size: 20px; 
+            display: block; 
+            font-size: 18px; 
             font-weight: bold; 
-            margin-bottom: 10px; 
-        }
-        .date-controls { display: block; }
-        .date-controls button { 
-            width: 70px; height: 30px; font-size: 12px; 
-            cursor: pointer; border: 1px solid #ccc; background: #fff; 
-            margin: 0 3px; border-radius: 4px;
+            margin-bottom: 8px; 
         }
 
-        /* [핵심] 레이아웃 구조: 시간 칼럼 고정 및 슬롯 스크롤 */
+        .date-controls { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .date-controls button { 
+            width: 70px; 
+            height: 30px; 
+            font-size: 11px; 
+            cursor: pointer; 
+            border: 1px solid #ccc; 
+            background: #fff; 
+            border-radius: 4px;
+            box-sizing: border-box;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* [핵심] 메인 컨텐츠 영역 높이 정밀 계산 */
         .outer-wrapper {
             display: flex;
             position: relative;
             background: #fff;
-            overflow-x: auto; /* 전체 영역 스크롤 허용 */
+            overflow-x: auto; /* 좌우 스크롤만 허용 */
+            overflow-y: hidden; /* 상하 스크롤 완전 차단 */
+            height: calc(100vh - 95px); /* 전체 높이에서 헤더 제외 */
+            width: 100%;
         }
 
-        /* [핵심] 시간 칼럼 왼쪽 고정 */
+        /* 시간 칼럼 고정 */
         .time-column {
             width: 55px;
             flex-shrink: 0;
             background-color: #fdfdfd;
             border-right: 1px solid #ddd;
             position: sticky;
-            left: 0; /* 왼쪽 끝에 고정 */
+            left: 0;
             z-index: 500;
-            height: calc(35px + (24px * 15));
+            /* [수정] 슬롯 높이에 맞춰 칼럼 높이 설정 */
+            height: calc(35px + (24px * 15)); 
         }
-
-        .time-header { height: 35px; border-bottom: 1px solid #ddd; }
-
+        .time-header { height: 35px; border-bottom: 1px solid #ddd; box-sizing: border-box; }
         .time-slot-sync {
             height: 24px;
             display: flex;
@@ -67,14 +91,12 @@
             box-sizing: border-box;
             position: relative;
         }
-
         .time-slot-sync span {
             font-size: 8pt; 
             color: #444;
             font-weight: 600;
             transform: translateY(-5px); 
         }
-
         .time-slot-sync::after {
             content: "";
             position: absolute;
@@ -86,27 +108,22 @@
         }
         .is-first-slot::after { top: 0 !important; }
 
-        /* 캘린더 슬롯 영역 (좌우 스크롤되는 부분) */
+        /* 캘린더 컨테이너 */
         .calendar-container {
             display: flex;
             position: relative;
             flex-grow: 1;
+            height: fit-content; /* 내부 높이에 맞춤 */
         }
-
-        .calendar-box { 
-            width: 80px; /* 모바일 가독성을 위해 살짝 키움 */
-            flex-shrink: 0; 
-            border-right: 1px solid #e5e5e5; 
-        }
-        
+        .calendar-box { width: 80px; flex-shrink: 0; border-right: 1px solid #e5e5e5; }
         .calendar-title {
-            font-size: 11px; font-weight: bold; margin: 0; 
+            font-size: 10px; font-weight: bold; margin: 0; 
             height: 35px; line-height: 35px; text-align: center;
             background: #fdfdfd; border-bottom: 1px solid #ddd;
             box-sizing: border-box;
         }
 
-        /* FullCalendar 스타일 보정 */
+        /* FullCalendar 오버라이드 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; }
         .fc-timegrid-slot { 
@@ -114,8 +131,6 @@
             border-bottom: 1px solid #e5e5e5 !important;
             box-sizing: border-box;
         }
-
-        /* 이벤트 클릭 방지 및 폰트 축소 */
         .fc-event { 
             border: none !important; 
             border-radius: 4px !important; 
@@ -130,7 +145,6 @@
             line-height: 1.1;
             word-break: break-all;
         }
-        
         #now-indicator-line {
             position: absolute;
             left: 0; right: 0; height: 1px;
@@ -177,7 +191,7 @@
     </div>
 
     <script>
-        // 코드 주석: 날짜 버튼 줄바꿈 및 좌측 시간 칼럼 고정 기능을 구현했습니다. [사용자 정보 반영]
+        // 주석: 상하 스크롤을 완전히 제거하고 좌우 스크롤만 남겼습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
