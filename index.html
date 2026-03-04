@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (Fixed Frame)</title>
+    <title>3D Printer Schedule (Perfect Scroll)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* [수정] 전체 페이지 상하 스크롤 완전 제거 */
+        /* 페이지 기본 설정 */
         html, body { 
             font-family: 'Segoe UI', sans-serif; 
             background-color: #f8f9fa; 
             margin: 0; 
             padding: 0; 
             height: 100%; 
-            overflow: hidden; /* 상하 스크롤 금지 */
-            position: fixed; /* 모바일 바운스 방지 */
+            overflow: hidden; 
+            position: fixed; 
             width: 100%;
         }
         
-        /* 헤더 섹션 (높이 약 95px 고정) */
+        /* 헤더 섹션 */
         .header-section {
             text-align: center;
             padding: 12px 0;
@@ -30,6 +30,7 @@
             border-bottom: 1px solid #ddd;
             height: 95px;
             box-sizing: border-box;
+            width: 100%;
         }
         .main-date { 
             display: block; 
@@ -37,7 +38,6 @@
             font-weight: bold; 
             margin-bottom: 8px; 
         }
-
         .date-controls { 
             display: flex; 
             justify-content: center; 
@@ -45,28 +45,23 @@
             gap: 6px; 
         }
         .date-controls button { 
-            width: 70px; 
-            height: 30px; 
-            font-size: 11px; 
-            cursor: pointer; 
-            border: 1px solid #ccc; 
-            background: #fff; 
-            border-radius: 4px;
-            box-sizing: border-box;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
+            width: 70px; height: 30px; font-size: 11px; 
+            cursor: pointer; border: 1px solid #ccc; background: #fff; 
+            border-radius: 4px; box-sizing: border-box;
+            display: inline-flex; justify-content: center; align-items: center;
         }
 
-        /* [핵심] 메인 컨텐츠 영역 높이 정밀 계산 */
+        /* [수정] 스크롤 영역 최적화 */
         .outer-wrapper {
             display: flex;
             position: relative;
             background: #fff;
-            overflow-x: auto; /* 좌우 스크롤만 허용 */
-            overflow-y: hidden; /* 상하 스크롤 완전 차단 */
-            height: calc(100vh - 95px); /* 전체 높이에서 헤더 제외 */
+            overflow-x: auto; /* 좌우 스크롤 */
+            overflow-y: hidden; /* 상하 차단 */
+            height: calc(100vh - 95px);
             width: 100%;
+            /* 모바일에서 부드러운 스크롤 */
+            -webkit-overflow-scrolling: touch; 
         }
 
         /* 시간 칼럼 고정 */
@@ -78,7 +73,6 @@
             position: sticky;
             left: 0;
             z-index: 500;
-            /* [수정] 슬롯 높이에 맞춰 칼럼 높이 설정 */
             height: calc(35px + (24px * 15)); 
         }
         .time-header { height: 35px; border-bottom: 1px solid #ddd; box-sizing: border-box; }
@@ -92,30 +86,32 @@
             position: relative;
         }
         .time-slot-sync span {
-            font-size: 8pt; 
-            color: #444;
-            font-weight: 600;
+            font-size: 8pt; color: #444; font-weight: 600;
             transform: translateY(-5px); 
         }
         .time-slot-sync::after {
-            content: "";
-            position: absolute;
-            right: 0;
-            top: 2px;
-            width: 6px;
-            height: 1px;
-            background-color: #bbb;
+            content: ""; position: absolute; right: 0; top: 2px;
+            width: 6px; height: 1px; background-color: #bbb;
         }
         .is-first-slot::after { top: 0 !important; }
 
-        /* 캘린더 컨테이너 */
+        /* [수정] 캘린더 컨테이너 - 너비를 내용물에 딱 맞춤 */
         .calendar-container {
-            display: flex;
+            display: inline-flex; /* 내용물만큼만 너비 차지 */
             position: relative;
-            flex-grow: 1;
-            height: fit-content; /* 내부 높이에 맞춤 */
+            height: fit-content;
         }
-        .calendar-box { width: 80px; flex-shrink: 0; border-right: 1px solid #e5e5e5; }
+
+        /* 칼럼 박스 */
+        .calendar-box { 
+            width: 75px; 
+            flex-shrink: 0; 
+            border-right: 1px solid #e5e5e5; 
+            box-sizing: border-box;
+        }
+        /* 마지막 칼럼의 오른쪽 테두리는 중복되지 않게 처리(선택사항) */
+        .calendar-box:last-child { border-right: 1px solid #ddd; }
+
         .calendar-title {
             font-size: 10px; font-weight: bold; margin: 0; 
             height: 35px; line-height: 35px; text-align: center;
@@ -123,7 +119,7 @@
             box-sizing: border-box;
         }
 
-        /* FullCalendar 오버라이드 */
+        /* FullCalendar 스타일 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; }
         .fc-timegrid-slot { 
@@ -132,22 +128,15 @@
             box-sizing: border-box;
         }
         .fc-event { 
-            border: none !important; 
-            border-radius: 4px !important; 
-            margin: 1px !important; 
-            pointer-events: none !important; 
+            border: none !important; border-radius: 4px !important; 
+            margin: 1px !important; pointer-events: none !important; 
         }
         .event-text { 
-            font-size: 8px; 
-            color: white; 
-            padding: 1px; 
-            text-align: center; 
-            line-height: 1.1;
-            word-break: break-all;
+            font-size: 8px; color: white; padding: 1px; 
+            text-align: center; line-height: 1.1; word-break: break-all;
         }
         #now-indicator-line {
-            position: absolute;
-            left: 0; right: 0; height: 1px;
+            position: absolute; left: 0; right: 0; height: 1px;
             background-color: #ff0000; z-index: 100;
             pointer-events: none; display: none;
         }
@@ -191,7 +180,7 @@
     </div>
 
     <script>
-        // 주석: 상하 스크롤을 완전히 제거하고 좌우 스크롤만 남겼습니다. [사용자 정보 반영]
+        // 주석: test.06 이후의 불필요한 공백을 제거하기 위해 inline-flex 구조를 적용했습니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
