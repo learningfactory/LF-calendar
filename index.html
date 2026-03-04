@@ -3,100 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Final Precision)</title>
+    <title>3D Printer Schedule (Final Fixed)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* 기본 레이아웃 */
+        /* [UI] 전체 배경 및 폰트 설정 */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px; overflow-x: auto; }
+        
         .date-controls { text-align: center; padding: 10px 0; }
         .main-date { font-size: 18px; font-weight: bold; margin-right: 15px; }
         .date-controls button { width: 65px; height: 26px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; }
 
+        /* 대시보드 메인 레이아웃 */
         .dashboard-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
             margin: 0 auto;
             width: fit-content;
-            position: relative;
         }
 
+        /* [수정] 독립된 시각 칼럼 (오차 방지를 위해 고정 너비 사용) */
+        .time-column {
+            width: 55px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border-top: 1px solid #ddd;
+            border-left: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            margin-right: -1px; /* 캘린더 보더와 겹침 처리 */
+            z-index: 10;
+        }
+
+        /* 시각 칼럼 헤더 (빈 공간) */
+        .time-header {
+            height: 35px; /* 캘린더 헤더 .calendar-title과 반드시 일치 */
+            border-bottom: 1px solid #ddd;
+            background: #fdfdfd;
+        }
+
+        /* [핵심] 시각 숫자 및 회색 작대기 (Tick) */
+        .time-slot {
+            height: 24px; /* 캘린더 슬롯 .fc-timegrid-slot과 반드시 일치 */
+            position: relative;
+            box-sizing: border-box; /* 보더가 높이에 영향을 주지 않도록 설정 */
+        }
+
+        /* 시각 숫자 스타일 및 우측 정렬 */
+        .time-slot span {
+            position: absolute;
+            right: 12px;
+            top: -8px; /* 숫자를 눈금 바 중앙에 위치시킴 */
+            font-size: 10px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* 회색 작대기 (Tick) - 모든 칼럼과 동일한 알고리즘으로 생성 */
+        .time-slot::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 7px;
+            height: 1px;
+            background-color: #ccc;
+        }
+
+        /* [수정] 09:00 위의 첫 번째 회색 바 제거 */
+        .time-slot:first-child::after {
+            display: none;
+        }
+
+        /* 캘린더 영역 */
         .calendar-container {
             display: flex;
             background-color: white;
             border: 1px solid #ddd;
             position: relative;
+            z-index: 1;
         }
 
-        /* [핵심] 1번 칼럼만 시간축을 위해 너비를 넓힘 */
-        .calendar-box { flex-shrink: 0; border-right: 1px solid #eee; width: 75px; }
-        .calendar-box:first-child { width: 130px; } /* 시간 55px + 슬롯 75px */
+        .calendar-box { 
+            width: 75px; 
+            flex-shrink: 0; 
+            border-right: 1px solid #eee; 
+        }
 
         .calendar-title {
             font-size: 11px; font-weight: bold; margin: 0; 
             height: 35px; line-height: 35px; text-align: center;
             background: #fdfdfd; border-bottom: 1px solid #ddd;
+            box-sizing: border-box;
         }
-        /* No.01 텍스트만 우측으로 밀어서 75px 슬롯 중앙에 맞춤 */
-        .calendar-box:first-child .calendar-title { padding-left: 55px; }
 
-        .calendar { width: 100%; height: auto; }
+        .calendar { width: 75px; height: auto; }
 
-        /* [FullCalendar] 내부 격자 및 시간축 커스텀 */
+        /* FullCalendar 격자 및 가로선 제거 */
         .fc-col-header { display: none; } 
-        
-        /* 1. 모든 가로선 제거 */
+        .fc-timegrid-slot-label { display: none !important; }
         .fc-timegrid-slot { 
             height: 24px !important; 
-            border-bottom: none !important; 
-            border-top: none !important;
+            border-bottom: none !important; /* 가로선 삭제 */
+            box-sizing: border-box;
         }
-        .fc-theme-standard td, .fc-theme-standard th { border: none !important; }
-        /* 세로 구분선은 유지 */
-        .calendar-box { border-right: 1px solid #eee; }
+        .fc-theme-standard td, .fc-theme-standard th { border-top: none !important; }
 
-        /* 2. 시간축 레이블 강제 활성화 및 디자인 (1번 칼럼만) */
-        .calendar-box:first-child .fc-timegrid-slot-label {
-            display: table-cell !important;
-            width: 55px !important;
-            padding: 0 10px 0 0 !important;
-            vertical-align: top !important;
-            position: relative;
-            border: none !important;
-        }
-
-        /* 3. 시각 숫자 스타일 */
-        .fc-timegrid-slot-label-cushion {
-            font-size: 10px !important;
-            color: #555;
-            font-weight: 500;
-            display: block;
-            text-align: right;
-            transform: translateY(-8px); /* 숫자 위치 미세 조정 */
-            padding: 0 !important;
-        }
-
-        /* 4. 회색 눈금 바 (Tick) - 1번 칼럼 레이블에 직접 부착 */
-        .fc-timegrid-slot-label::after {
-            content: "";
-            position: absolute;
-            right: 0;
-            top: 0; /* 슬롯 시작점에 고정하여 100% 일치시킴 */
-            width: 7px;
-            height: 1px; /* 두께 일정하게 고정 */
-            background-color: #ccc;
-        }
-
-        /* [수정] 최상단(09:00) 눈금 바 제거 */
-        .fc-timegrid-slots tr:first-child .fc-timegrid-slot-label::after {
-            display: none !important;
-        }
-
-        /* 빨간 선 (두께 1px) */
+        /* 빨간 선 (1px 두께) */
         #now-indicator-line {
             position: absolute;
-            left: 55px; /* 시간축 너비만큼 제외 */
+            left: 0; 
             right: 0;
             height: 1px;
             background-color: #ff0000;
@@ -105,11 +126,10 @@
             display: none;
         }
 
-        /* 이벤트 디자인 */
-        .fc-event { cursor: default !important; border: none !important; border-radius: 4px !important; margin: 1px !important; }
-        .event-text { font-size: 9px; color: white; padding: 2px; text-align: center; }
+        /* 이벤트 텍스트 설정 */
+        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; }
+        .event-text { font-size: 9px; color: white; padding: 2px; text-align: center; line-height: 1.1; }
         .fc-scroller { overflow: hidden !important; }
-        .fc-timegrid-now-indicator-line { display: none !important; }
     </style>
 </head>
 <body>
@@ -122,8 +142,13 @@
     </div>
     
     <div class="dashboard-wrapper">
-        <div id="now-indicator-line"></div>
+        <div class="time-column" id="time-column">
+            <div class="time-header"></div>
+            </div>
+
         <div class="calendar-container">
+            <div id="now-indicator-line"></div>
+            
             <div class="calendar-box"><h3 class="calendar-title">No.01</h3><div id="calendar1" class="calendar"></div></div>
             <div class="calendar-box"><h3 class="calendar-title">No.02</h3><div id="calendar2" class="calendar"></div></div>
             <div class="calendar-box"><h3 class="calendar-title">No.03</h3><div id="calendar3" class="calendar"></div></div>
@@ -142,9 +167,20 @@
     </div>
 
     <script>
-        // 주석 추가: 1번 칼럼의 시간축 레이블을 주축으로 활용합니다. [사용자 정보 반영]
+        // 코드 이해를 돕기 위한 상세 주석 추가 [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
+
+        // 시간축 레이어를 생성합니다 (09:00 ~ 23:00)
+        function createTimeColumn() {
+            const col = document.getElementById('time-column');
+            for(let i=9; i<=23; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'time-slot';
+                slot.innerHTML = `<span>${i.toString().padStart(2, '0')}:00</span>`;
+                col.appendChild(slot);
+            }
+        }
 
         function updateMainDate() {
             const dateStr = currentDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric' });
@@ -160,7 +196,7 @@
                 const startHour = 9;
                 const currentHour = now.getHours() + (now.getMinutes() / 60);
                 if (currentHour >= 9 && currentHour <= 23) {
-                    const slotHeight = 24;
+                    const slotHeight = 24; 
                     const headerHeight = 35; 
                     const position = (currentHour - startHour) * slotHeight + headerHeight;
                     line.style.top = position + "px";
@@ -184,7 +220,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            createTimeColumn();
             updateMainDate();
+            
             const calendarData = [
                 { id: "learningfactory01@gmail.com", element: "calendar1", color: "#34A853" },
                 { id: "learningfactory11@gmail.com", element: "calendar2", color: "#34A853" },
@@ -209,7 +247,6 @@
                     slotMinTime: '09:00:00',
                     slotMaxTime: '23:00:00',
                     slotDuration: '01:00:00',
-                    slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
                     allDaySlot: false,
                     contentHeight: 'auto',
                     headerToolbar: false,
