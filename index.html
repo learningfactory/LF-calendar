@@ -3,66 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Final Fit)</title>
+    <title>3D Printer Schedule (Final Enhanced)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* [UI] 전체 배경 및 여백 최소화 */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px; overflow-x: auto; }
+        /* [UI] 전체 배경 및 여백 설정 */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px; }
         
-        /* [핵심] 가로 여백 해결: 컨테이너가 내용물만큼만 너비를 가지게 함 */
         .calendar-container {
             display: flex;
-            margin: 0 auto;        /* 화면 중앙 정렬 */
-            width: fit-content;    /* 중요: 내용물 너비에 딱 맞춤 (test.06 옆 여백 제거) */
+            margin: 0 auto;
+            width: fit-content;
             background-color: white;
             gap: 0; 
             border: 1px solid #ddd;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        .calendar-box { display: inline-block; flex-shrink: 0; border-right: 1px solid #eee; }
+        .calendar-box { display: inline-block; flex-shrink: 0; border-right: 1px solid #eee; position: relative; }
 
+        /* [가로] 장비 번호 헤더 */
         .calendar-title {
             font-size: 11px; font-weight: bold; margin: 0; padding: 6px 0;
             text-align: center; background: #eee; border-bottom: 1px solid #ddd;
         }
 
-        /* [핵심] 세로 여백 해결: 높이를 고정하지 않고 내용물에 맞춤 */
+        /* [세로] 캘린더 너비 및 높이 */
         .calendar {
             width: 75px; 
-            height: auto; /* 내용에 따라 높이 자동 결정 */
+            height: auto;
             background-color: white;
         }
 
         .calendar-box:first-child .calendar { width: 115px; }
 
+        /* [UI] 상단 컨트롤바 */
         .date-controls { text-align: center; padding: 10px 0; }
         .main-date { font-size: 18px; font-weight: bold; margin-right: 15px; }
         .date-controls button { width: 65px; height: 26px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; }
 
-        /* FullCalendar 내부 슬림화 */
+        /* [FullCalendar] 내부 압축 및 스타일 조정 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; border: none !important; }
         
-        /* 슬롯 높이를 16px로 고정하여 콤팩트하게 만듦 */
+        /* [수정 1] 세로 칸 높이를 20% 늘림 (16px -> 20px) */
         .fc-timegrid-slot { 
-            height: 16px !important; 
+            height: 20px !important; 
             border-bottom: 1px solid #f0f0f0 !important; 
         }
         
+        /* [수정 2] 시간 라벨 위치를 위쪽 라인으로 올림 */
         .calendar-box:first-child .fc-timegrid-slot-label { 
-            display: block !important; width: 35px; font-size: 10px !important; text-align: right; padding-right: 5px;
+            display: block !important; 
+            width: 40px; 
+            font-size: 10px !important; 
+            text-align: right; 
+            padding-right: 5px;
+            vertical-align: top !important; /* 텍스트를 위로 정렬 */
+            position: relative;
+            top: -10px; /* 폰트 위치를 슬롯 경계선에 맞춤 */
         }
 
-        /* 이벤트 텍스트 최적화 */
+        /* [수정 3] 현재 시간 빨간 선(Now Indicator) 스타일 */
+        .fc-timegrid-now-indicator-line {
+            border-color: red !important;
+            border-width: 2px !important;
+            z-index: 5;
+        }
+        /* 빨간 선 왼쪽 동그라미 제거 (깔끔하게 선만 표시) */
+        .fc-timegrid-now-indicator-arrow { display: none !important; }
+
+        /* 일정 텍스트 최적화 */
         .fc-event { cursor: default !important; border: none !important; border-radius: 0 !important; }
         .event-text { font-size: 9px; color: white; padding: 1px; line-height: 1.1; text-align: center; word-break: break-all; }
-        
-        /* 하단 불필요한 스크롤바 방지 */
         .fc-scroller { overflow: hidden !important; }
     </style>
 </head>
@@ -96,9 +111,12 @@
         let currentDate = new Date();
         window.calendars = [];
 
+        // 상단 날짜 및 영어 요일 표기 함수
         function updateMainDate() {
-            let options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
-            document.getElementById('main-date').innerText = currentDate.toLocaleDateString('ko-KR', options);
+            // 영어 로케일('en-US')을 사용하여 요일을 약자로 가져옵니다.
+            const dateStr = currentDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric' });
+            const dayStr = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+            document.getElementById('main-date').innerText = `${dateStr} (${dayStr})`;
         }
 
         function changeDate(days) {
@@ -144,11 +162,15 @@
                     slotMaxTime: '23:00:00',
                     slotDuration: '01:00:00',
                     allDaySlot: false,
-                    contentHeight: 'auto', // 내용물 높이에 맞게 칸 크기 조절
-                    handleWindowResize: true,
+                    contentHeight: 'auto',
                     headerToolbar: false,
+                    
+                    // [기능] 현재 시간 빨간 줄 활성화
+                    nowIndicator: true, 
+
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
+                    
                     eventClick: function(info) { info.jsEvent.preventDefault(); },
                     eventDidMount: function(info) { info.el.removeAttribute('href'); },
                     eventContent: function(arg) {
