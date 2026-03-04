@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Security Enhanced)</title>
+    <title>3D Printer Schedule (80% Compressed)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* [UI] 전체 배경 및 폰트 설정 */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding: 20px; }
+        /* 전체적인 여백과 폰트 크기 축소 */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding: 10px; }
         
-        /* [UI] 캘린더 가로 나열 컨테이너 */
         .calendar-container {
             display: flex;
             overflow-x: auto;
-            padding: 10px;
+            padding: 5px;
             background-color: white;
             gap: 0; 
             white-space: nowrap; 
@@ -25,33 +24,37 @@
         
         .calendar-box { display: inline-block; }
 
+        /* 타이틀 크기 조절 */
         .calendar-title {
-            font-size: 15px; font-weight: bold; margin-bottom: 5px;
+            font-size: 13px; font-weight: bold; margin-bottom: 3px;
             text-align: center; width: 100%;
         }
 
+        /* [핵심] 가로 100px, 세로 440px로 압축 */
         .calendar {
-            width: 125px; height: 550px; 
+            width: 100px; height: 440px; 
             background-color: white; border: 1px solid #eee;
         }
 
-        /* [UI] 날짜 컨트롤 버튼 스타일 */
-        .date-controls { text-align: center; margin-bottom: 20px; }
-        .main-date { font-size: 22px; font-weight: bold; display: block; margin-bottom: 10px; }
-        .date-controls button { width: 90px; height: 35px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: #fff; }
+        /* 날짜 컨트롤러 및 상단 폰트 압축 */
+        .date-controls { text-align: center; margin-bottom: 15px; }
+        .main-date { font-size: 18px; font-weight: bold; display: block; margin-bottom: 8px; }
+        .date-controls button { width: 75px; height: 30px; font-size: 12px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: #fff; }
 
-        /* [FullCalendar] 내부 레이아웃 미세 조정 */
+        /* FullCalendar 내부 레이아웃 압축 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; border: none !important; }
-        .fc-timegrid-slot { height: 20px !important; border-bottom: 1px solid #f0f0f0 !important; }
         
-        /* [UI] 첫 번째 칼럼만 시간축 표시 (구버전의 장점 유지) */
-        .calendar-box:first-child .fc-timegrid-slot-label { display: block !important; width: 44px; font-size: 13px !important; }
-        .calendar-box:first-child .calendar { width: 169px; }
+        /* [핵심] 세로 칸 높이를 16px로 줄여 더 많은 시간을 한눈에 표시 */
+        .fc-timegrid-slot { height: 16px !important; border-bottom: 1px solid #f0f0f0 !important; }
+        
+        /* 첫 번째 칼럼 시간축 너비도 80% 수준으로 조정 */
+        .calendar-box:first-child .fc-timegrid-slot-label { display: block !important; width: 35px; font-size: 11px !important; }
+        .calendar-box:first-child .calendar { width: 135px; }
 
-        /* [보안] 일정 클릭 불가 시각화 */
+        /* 일정 텍스트 크기 축소 */
         .fc-event { cursor: default !important; border: none !important; }
-        .event-text { font-size: 11px; color: white; padding: 2px; }
+        .event-text { font-size: 10px; color: white; padding: 1px; line-height: 1.1; text-align: center; }
     </style>
 </head>
 <body>
@@ -84,13 +87,11 @@
         let currentDate = new Date();
         window.calendars = [];
 
-        // [기능] 상단 날짜 텍스트 업데이트
         function updateMainDate() {
             let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('main-date').innerText = currentDate.toLocaleDateString('ko-KR', options);
         }
 
-        // [기능] 전역 날짜 변경 컨트롤
         function changeDate(days) {
             currentDate.setDate(currentDate.getDate() + days);
             updateMainDate();
@@ -106,7 +107,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateMainDate();
             
-            // [데이터] 구글 캘린더 ID 매핑 (확장된 14개)
             const calendarData = [
                 { id: "learningfactory01@gmail.com", element: "calendar1", color: "#34A853" },
                 { id: "learningfactory11@gmail.com", element: "calendar2", color: "#34A853" },
@@ -138,23 +138,14 @@
                     expandRows: true,
                     headerToolbar: false,
                     editable: false,
-
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
-
-                    // [보안 1] 왼쪽 클릭 차단
                     eventClick: function(info) { info.jsEvent.preventDefault(); },
-
-                    // [보안 2] 우클릭(새 탭 열기) 방지를 위한 href 제거
-                    eventDidMount: function(info) {
-                        info.el.removeAttribute('href');
-                    },
-
-                    // [보안 3] 텍스트만 표시하도록 내용 재구성
+                    eventDidMount: function(info) { info.el.removeAttribute('href'); },
                     eventContent: function(arg) {
                         let domNode = document.createElement('div');
                         domNode.classList.add('event-text');
-                        domNode.innerText = arg.event.title; // 제목(이름)만 노출
+                        domNode.innerText = arg.event.title; 
                         return { domNodes: [domNode] };
                     }
                 });
