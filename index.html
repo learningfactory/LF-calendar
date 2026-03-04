@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (9pt Font)</title>
+    <title>3D Printer Schedule (Final Polish)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
@@ -24,12 +24,13 @@
             width: fit-content;
         }
 
-        /* 시각 칼럼 스타일 */
+        /* [수정] 시각 칼럼 - 하단 보더 제거하여 삐져나온 선 정리 */
         .time-column {
             width: 60px;
             flex-shrink: 0;
             background-color: transparent;
             border-right: 1px solid #ddd;
+            border-bottom: none; 
         }
 
         .time-header {
@@ -49,16 +50,15 @@
             position: relative;
         }
 
-        /* [수정] 시각 폰트 9pt 적용 및 정렬 최적화 */
+        /* [수정] 시각 폰트 8pt 적용 및 위치 재보정 */
         .time-slot-sync span {
-            font-size: 9pt; /* 9포인트로 축소 */
+            font-size: 8pt; 
             color: #444;
             font-weight: 600;
-            /* 폰트가 작아진 만큼 중앙 정렬을 위해 위치 미세 조정 */
-            transform: translateY(-6px); 
+            transform: translateY(-5px); /* 폰트가 작아진 만큼 위치 최적화 */
         }
 
-        /* 회색 작대기 (Tick) */
+        /* 기본 회색 작대기 설정 (top: 2px) */
         .time-slot-sync::after {
             content: "";
             position: absolute;
@@ -69,7 +69,11 @@
             background-color: #bbb;
         }
 
-        /* 캘린더 컨테이너 */
+        /* [수정] 09:00 작대기만 2px 위로 (결과적으로 top: 0) */
+        .is-first-slot::after {
+            top: 0 !important;
+        }
+
         .calendar-container {
             display: flex;
             background-color: white;
@@ -94,6 +98,25 @@
         }
         .fc-theme-standard td, .fc-theme-standard th { border-top: none !important; }
 
+        /* [수정] 이벤트 슬롯을 빵빵하게 만들기 위해 마진 제거 및 너비 확장 */
+        .fc-timegrid-event-harness {
+            margin: 0 !important; /* 외부 여백 제거 */
+        }
+        .fc-event { 
+            border: none !important; 
+            border-radius: 0px !important; /* 각진 모양이 더 꽉 차 보임 */
+            margin: 0.5px 0 !important; /* 상하 아주 미세한 간격만 유지 */
+            padding: 0 !important;
+        }
+        .event-text { 
+            font-size: 9px; 
+            color: white; 
+            padding: 2px 1px; 
+            text-align: center; 
+            line-height: 1.1;
+            word-break: break-all;
+        }
+        
         #now-indicator-line {
             position: absolute;
             left: 0; right: 0; height: 1px;
@@ -101,8 +124,6 @@
             pointer-events: none; display: none;
         }
 
-        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; }
-        .event-text { font-size: 9px; color: white; padding: 2px; text-align: center; line-height: 1.1; }
         .fc-scroller { overflow: hidden !important; }
     </style>
 </head>
@@ -141,7 +162,7 @@
     </div>
 
     <script>
-        // 주석: 시각 폰트를 9pt로 줄이고 위치를 보정했습니다. [사용자 정보 반영]
+        // 요청하신 09:00 작대기 위치 및 슬롯 빵빵함 조절 로직입니다. [사용자 정보 반영]
         let currentDate = new Date();
         window.calendars = [];
 
@@ -153,6 +174,9 @@
             for(let i = startHour; i <= endHour; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'time-slot-sync';
+                // 09:00 첫 슬롯에만 특별 클래스 부여
+                if (i === startHour) slot.classList.add('is-first-slot');
+
                 slot.innerHTML = `<span>${i.toString().padStart(2, '0')}:00</span>`;
                 col.appendChild(slot);
             }
