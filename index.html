@@ -3,65 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (80% Compressed)</title>
+    <title>3D Printer Schedule (Ultra Compressed)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* 전체적인 여백과 폰트 크기 축소 */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding: 10px; }
+        /* [UI] 여백 최소화 및 배경 설정 */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding: 5px; margin: 0; overflow-x: hidden; }
         
         .calendar-container {
             display: flex;
             overflow-x: auto;
-            padding: 5px;
             background-color: white;
             gap: 0; 
-            white-space: nowrap; 
+            white-space: nowrap;
+            border: 1px solid #ddd;
         }
         
-        .calendar-box { display: inline-block; }
+        .calendar-box { display: inline-block; flex-shrink: 0; border-right: 1px solid #eee; }
 
-        /* 타이틀 크기 조절 */
+        /* [가로] 제목 영역 크기 축소 */
         .calendar-title {
-            font-size: 13px; font-weight: bold; margin-bottom: 3px;
-            text-align: center; width: 100%;
+            font-size: 11px; font-weight: bold; margin: 0; padding: 4px 0;
+            text-align: center; background: #eee; border-bottom: 1px solid #ddd;
         }
 
-        /* [핵심] 가로 100px, 세로 440px로 압축 */
+        /* [가로] 캘린더 너비를 75px로 초압축 */
         .calendar {
-            width: 100px; height: 440px; 
-            background-color: white; border: 1px solid #eee;
+            width: 75px; 
+            height: 82vh; /* 화면 높이의 약 82%를 사용하여 스크롤 방지 */
+            background-color: white;
         }
 
-        /* 날짜 컨트롤러 및 상단 폰트 압축 */
-        .date-controls { text-align: center; margin-bottom: 15px; }
-        .main-date { font-size: 18px; font-weight: bold; display: block; margin-bottom: 8px; }
-        .date-controls button { width: 75px; height: 30px; font-size: 12px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; background: #fff; }
+        /* [UI] 날짜 컨트롤러 간소화 */
+        .date-controls { text-align: center; padding: 5px 0; background: #fff; border-bottom: 1px solid #ddd; }
+        .main-date { font-size: 16px; font-weight: bold; margin-right: 15px; }
+        .date-controls button { width: 60px; height: 25px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; margin: 0 2px; }
 
-        /* FullCalendar 내부 레이아웃 압축 */
+        /* [FullCalendar] 내부 레이아웃 초정밀 조정 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; border: none !important; }
         
-        /* [핵심] 세로 칸 높이를 16px로 줄여 더 많은 시간을 한눈에 표시 */
-        .fc-timegrid-slot { height: 16px !important; border-bottom: 1px solid #f0f0f0 !important; }
+        /* [세로] 칸 높이를 더 줄여서(13px) 전체 시간대가 보이게 함 */
+        .fc-timegrid-slot { height: 13px !important; border-bottom: 1px solid #f5f5f5 !important; }
         
-        /* 첫 번째 칼럼 시간축 너비도 80% 수준으로 조정 */
-        .calendar-box:first-child .fc-timegrid-slot-label { display: block !important; width: 35px; font-size: 11px !important; }
-        .calendar-box:first-child .calendar { width: 135px; }
+        /* [가로] 첫 번째 칼럼 시간축 설정 (너비 110px로 축소) */
+        .calendar-box:first-child .fc-timegrid-slot-label { display: block !important; width: 30px; font-size: 10px !important; text-align: center; }
+        .calendar-box:first-child .calendar { width: 110px; }
 
-        /* 일정 텍스트 크기 축소 */
-        .fc-event { cursor: default !important; border: none !important; }
-        .event-text { font-size: 10px; color: white; padding: 1px; line-height: 1.1; text-align: center; }
+        /* [보안 및 디자인] 일정 텍스트 최소화 */
+        .fc-event { cursor: default !important; border: none !important; border-radius: 0 !important; }
+        .event-text { font-size: 9px; color: white; padding: 0 1px; line-height: 1.0; text-align: center; overflow: hidden; }
     </style>
 </head>
 <body>
 
     <div class="date-controls">
         <span class="main-date" id="main-date"></span>
-        <button onclick="changeDate(-1)">◀ Prev.</button>
+        <button onclick="changeDate(-1)">◀ Prev</button>
         <button onclick="goToToday()">Today</button>
         <button onclick="changeDate(1)">Next ▶</button>
     </div>
@@ -88,7 +89,7 @@
         window.calendars = [];
 
         function updateMainDate() {
-            let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            let options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
             document.getElementById('main-date').innerText = currentDate.toLocaleDateString('ko-KR', options);
         }
 
@@ -134,12 +135,14 @@
                     slotMinTime: '09:00:00',
                     slotMaxTime: '23:00:00',
                     allDaySlot: false,
-                    height: "auto",
-                    expandRows: true,
+                    contentHeight: 'auto', // 내용에 맞춰 높이 자동 조절
+                    expandRows: true,      // 행을 전체 높이에 맞춰 확장
                     headerToolbar: false,
-                    editable: false,
+                    handleWindowResize: true,
+
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
+
                     eventClick: function(info) { info.jsEvent.preventDefault(); },
                     eventDidMount: function(info) { info.el.removeAttribute('href'); },
                     eventContent: function(arg) {
