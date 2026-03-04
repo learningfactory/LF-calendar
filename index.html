@@ -3,82 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Printer Schedule (Final Enhanced)</title>
+    <title>3D Printer Schedule (Pro Dashboard)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* [UI] 전체 배경 및 여백 설정 */
+        /* [UI] 전체 레이아웃 */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 10px; }
         
-        .calendar-container {
-            display: flex;
-            margin: 0 auto;
-            width: fit-content;
-            background-color: white;
-            gap: 0; 
-            border: 1px solid #ddd;
-        }
-        
-        .calendar-box { display: inline-block; flex-shrink: 0; border-right: 1px solid #eee; position: relative; }
-
-        /* [가로] 장비 번호 헤더 */
-        .calendar-title {
-            font-size: 11px; font-weight: bold; margin: 0; padding: 6px 0;
-            text-align: center; background: #eee; border-bottom: 1px solid #ddd;
-        }
-
-        /* [세로] 캘린더 너비 및 높이 */
-        .calendar {
-            width: 75px; 
-            height: auto;
-            background-color: white;
-        }
-
-        .calendar-box:first-child .calendar { width: 115px; }
-
-        /* [UI] 상단 컨트롤바 */
         .date-controls { text-align: center; padding: 10px 0; }
         .main-date { font-size: 18px; font-weight: bold; margin-right: 15px; }
         .date-controls button { width: 65px; height: 26px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; }
 
-        /* [FullCalendar] 내부 압축 및 스타일 조정 */
+        /* [핵심] 관통하는 빨간 선 컨테이너 */
+        .dashboard-wrapper {
+            position: relative; /* 빨간 선의 기준점 */
+            margin: 0 auto;
+            width: fit-content;
+        }
+
+        .calendar-container {
+            display: flex;
+            background-color: white;
+            gap: 0; 
+            border: 1px solid #ddd;
+            position: relative;
+        }
+        
+        /* [수정] 관통하는 실시간 빨간 선 스타일 */
+        #now-indicator-line {
+            position: absolute;
+            left: 45px; /* 첫 칼럼 시간 글자 너비 이후부터 시작 */
+            right: 0;
+            height: 1px; /* 두께 축소 */
+            background-color: red;
+            z-index: 100; /* 최상위 배치 */
+            pointer-events: none; /* 클릭 방해 금지 */
+            display: none; /* 초기값 숨김 */
+        }
+
+        .calendar-box { display: inline-block; flex-shrink: 0; border-right: 1px solid #eee; }
+
+        /* [수정] No.01 위치 중앙 정렬 조정 */
+        .calendar-title {
+            font-size: 11px; font-weight: bold; margin: 0; padding: 6px 0;
+            text-align: center; background: #eee; border-bottom: 1px solid #ddd;
+        }
+        /* 첫 번째 박스의 타이틀만 오른쪽으로 밀어서 슬롯 중앙에 맞춤 */
+        .calendar-box:first-child .calendar-title { padding-left: 45px; }
+
+        .calendar { width: 75px; height: auto; background-color: white; }
+        .calendar-box:first-child .calendar { width: 120px; }
+
+        /* [FullCalendar] 내부 스타일 제거 및 눈금 추가 */
         .fc-col-header { display: none; } 
         .fc-timegrid-slot-label { display: none !important; border: none !important; }
         
-        /* [수정 1] 세로 칸 높이를 20% 늘림 (16px -> 20px) */
-        .fc-timegrid-slot { 
-            height: 20px !important; 
-            border-bottom: 1px solid #f0f0f0 !important; 
-        }
+        /* 세로 높이 유지 (20px) */
+        .fc-timegrid-slot { height: 20px !important; border-bottom: 1px solid #f0f0f0 !important; }
         
-        /* [수정 2] 시간 라벨 위치를 위쪽 라인으로 올림 */
+        /* [수정] 첫 칼럼 가로선 제거 및 눈금(Tick) 생성 */
+        .calendar-box:first-child .fc-timegrid-slot { border-bottom: none !important; }
+        
         .calendar-box:first-child .fc-timegrid-slot-label { 
             display: block !important; 
-            width: 40px; 
+            width: 45px; 
             font-size: 10px !important; 
             text-align: right; 
-            padding-right: 5px;
-            vertical-align: top !important; /* 텍스트를 위로 정렬 */
+            padding-right: 10px;
+            vertical-align: top !important;
             position: relative;
-            top: -10px; /* 폰트 위치를 슬롯 경계선에 맞춤 */
+            top: -10px;
+            color: #666;
         }
 
-        /* [수정 3] 현재 시간 빨간 선(Now Indicator) 스타일 */
-        .fc-timegrid-now-indicator-line {
-            border-color: red !important;
-            border-width: 2px !important;
-            z-index: 5;
+        /* 시각 옆 짧은 연결 선 (눈금) */
+        .calendar-box:first-child .fc-timegrid-slot-label::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 10px;
+            width: 5px;
+            height: 1px;
+            background-color: #ddd;
         }
-        /* 빨간 선 왼쪽 동그라미 제거 (깔끔하게 선만 표시) */
-        .fc-timegrid-now-indicator-arrow { display: none !important; }
 
-        /* 일정 텍스트 최적화 */
+        /* 이벤트 디자인 */
         .fc-event { cursor: default !important; border: none !important; border-radius: 0 !important; }
-        .event-text { font-size: 9px; color: white; padding: 1px; line-height: 1.1; text-align: center; word-break: break-all; }
+        .event-text { font-size: 9px; color: white; padding: 1px; line-height: 1.1; text-align: center; }
         .fc-scroller { overflow: hidden !important; }
+        
+        /* 기존 기본 인디케이터 숨김 */
+        .fc-timegrid-now-indicator-line { display: none !important; }
+        .fc-timegrid-now-indicator-arrow { display: none !important; }
     </style>
 </head>
 <body>
@@ -90,34 +109,66 @@
         <button onclick="changeDate(1)">Next ▶</button>
     </div>
     
-    <div class="calendar-container">
-        <div class="calendar-box"><h3 class="calendar-title">No.01</h3><div id="calendar1" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">No.02</h3><div id="calendar2" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">No.03</h3><div id="calendar3" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">No.04</h3><div id="calendar4" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">No.05</h3><div id="calendar5" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">No.06</h3><div id="calendar6" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">No.07</h3><div id="calendar7" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">No.08</h3><div id="calendar8" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.01</h3><div id="calendar9" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.02</h3><div id="calendar10" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.03</h3><div id="calendar11" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.04</h3><div id="calendar12" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.05</h3><div id="calendar13" class="calendar"></div></div>
-        <div class="calendar-box"><h3 class="calendar-title">test.06</h3><div id="calendar14" class="calendar"></div></div>
+    <div class="dashboard-wrapper">
+        <div id="now-indicator-line"></div>
+        
+        <div class="calendar-container">
+            <div class="calendar-box"><h3 class="calendar-title">No.01</h3><div id="calendar1" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">No.02</h3><div id="calendar2" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">No.03</h3><div id="calendar3" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">No.04</h3><div id="calendar4" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">No.05</h3><div id="calendar5" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">No.06</h3><div id="calendar6" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">No.07</h3><div id="calendar7" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">No.08</h3><div id="calendar8" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">test.01</h3><div id="calendar9" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">test.02</h3><div id="calendar10" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">test.03</h3><div id="calendar11" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">test.04</h3><div id="calendar12" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">test.05</h3><div id="calendar13" class="calendar"></div></div>
+            <div class="calendar-box"><h3 class="calendar-title">test.06</h3><div id="calendar14" class="calendar"></div></div>
+        </div>
     </div>
 
     <script>
         let currentDate = new Date();
         window.calendars = [];
 
-        // 상단 날짜 및 영어 요일 표기 함수
         function updateMainDate() {
-            // 영어 로케일('en-US')을 사용하여 요일을 약자로 가져옵니다.
             const dateStr = currentDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric' });
             const dayStr = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
             document.getElementById('main-date').innerText = `${dateStr} (${dayStr})`;
+            updateRedLine(); // 날짜 변경 시 선 위치 업데이트
         }
+
+        // [핵심] 최상위 빨간 선 위치 계산 및 업데이트 함수
+        function updateRedLine() {
+            const line = document.getElementById('now-indicator-line');
+            const now = new Date();
+            
+            // 오늘 날짜인 경우에만 선을 표시
+            if (now.toDateString() === currentDate.toDateString()) {
+                const startHour = 9;
+                const endHour = 23;
+                const currentHour = now.getHours() + (now.getMinutes() / 60);
+                
+                if (currentHour >= startHour && currentHour <= endHour) {
+                    const slotHeight = 20; // CSS의 .fc-timegrid-slot height와 일치해야 함
+                    const topOffset = 30;  // .calendar-title의 높이 근사치
+                    const position = (currentHour - startHour) * slotHeight + topOffset;
+                    
+                    line.style.top = position + "px";
+                    line.style.display = "block";
+                } else {
+                    line.style.display = "none";
+                }
+            } else {
+                line.style.display = "none";
+            }
+        }
+
+        // 1분마다 빨간 선 위치 갱신
+        setInterval(updateRedLine, 60000);
 
         function changeDate(days) {
             currentDate.setDate(currentDate.getDate() + days);
@@ -161,16 +212,13 @@
                     slotMinTime: '09:00:00',
                     slotMaxTime: '23:00:00',
                     slotDuration: '01:00:00',
+                    // [수정] 시간 표기 형식을 24:00으로 변경
+                    slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
                     allDaySlot: false,
                     contentHeight: 'auto',
                     headerToolbar: false,
-                    
-                    // [기능] 현재 시간 빨간 줄 활성화
-                    nowIndicator: true, 
-
                     googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
                     eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
-                    
                     eventClick: function(info) { info.jsEvent.preventDefault(); },
                     eventDidMount: function(info) { info.el.removeAttribute('href'); },
                     eventContent: function(arg) {
@@ -183,6 +231,9 @@
                 calendar.render();
                 calendars.push(calendar);
             });
+            
+            // 렌더링 직후 선 위치 맞춤
+            setTimeout(updateRedLine, 500);
         });
     </script>
 </body>
