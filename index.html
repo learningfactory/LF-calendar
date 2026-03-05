@@ -3,99 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (Perfect Sync)</title>
+    <title>3D Printer Dynamic Schedule</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* [전체] 배경 및 레이아웃 설정 */
-        html, body { 
-            font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif; 
-            background-color: #ffffff; margin: 0; padding: 0; 
-            height: 100%; overflow: hidden; position: fixed; width: 100%;
-        }
-        
-        .header-section {
-            text-align: center; padding: 12px 0;
-            background: #ffffff; border-bottom: 1px solid #ddd;
-            height: 95px; box-sizing: border-box;
-        }
+        /* [전체] 기존 스타일 유지 */
+        html, body { font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif; background-color: #ffffff; margin: 0; padding: 0; height: 100%; overflow: hidden; position: fixed; width: 100%; }
+        .header-section { text-align: center; padding: 12px 0; background: #ffffff; border-bottom: 1px solid #ddd; height: 95px; box-sizing: border-box; }
         .main-date { display: block; font-size: 18px; font-weight: bold; margin-bottom: 8px; }
-        
         .date-controls { display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .btn-group { display: flex; gap: 6px; }
-        .date-controls button { 
-            width: 70px; height: 30px; font-size: 11px; cursor: pointer;
-            border: 1px solid #ccc; background: #fff; border-radius: 4px;
-        }
-
-        .outer-wrapper {
-            display: flex; position: relative; background: #ffffff; 
-            overflow-x: auto; overflow-y: hidden;
-            height: 600px; width: 100%;
-        }
-
-        /* 시각 칼럼 설정 */
-        .time-column {
-            width: 45px; flex-shrink: 0; background-color: #ffffff; border-right: 1px solid #ddd;
-            position: sticky; left: 0; z-index: 501; height: calc(35px + (24px * 15)); 
-        }
-        .time-header { height: 35px; border-bottom: 1px solid #ddd; }
-        .time-slot-sync {
-            height: 24px; display: flex; align-items: flex-start;
-            justify-content: flex-end; padding-right: 8px; position: relative;
-        }
-        .time-slot-sync span { 
-            font-size: 7pt; color: #444; font-weight: 500; 
-            transform: translateY(-6px);
-        }
+        .date-controls button { width: 70px; height: 30px; font-size: 11px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
         
-        /* [요청] 09:00 눈금만 1px 위로, 나머지는 1px 아래로 */
-        .time-slot-sync::after {
-            content: ""; position: absolute; right: 0; 
-            width: 5px; height: 1px; background-color: #ccc;
-        }
-        .time-slot-sync:first-child::after { top: -1px; } /* 09:00 눈금만 위로 */
+        /* 600px 높이 유지 */
+        .outer-wrapper { display: flex; position: relative; background: #ffffff; overflow-x: auto; overflow-y: hidden; height: 600px; width: 100%; }
+        .time-column { width: 45px; flex-shrink: 0; background-color: #ffffff; border-right: 1px solid #ddd; position: sticky; left: 0; z-index: 501; height: calc(35px + (24px * 15)); }
+        .time-header { height: 35px; border-bottom: 1px solid #ddd; }
+        .time-slot-sync { height: 24px; display: flex; align-items: flex-start; justify-content: flex-end; padding-right: 8px; position: relative; }
+        .time-slot-sync span { font-size: 7pt; color: #444; font-weight: 500; transform: translateY(-6px); }
+        .time-slot-sync::after { content: ""; position: absolute; right: 0; width: 5px; height: 1px; background-color: #ccc; }
+        .time-slot-sync:first-child::after { top: -1px; } 
         .time-slot-sync:not(:first-child)::after { top: 1px; }
 
         .calendar-container { display: inline-flex; position: relative; height: fit-content; background-color: #ffffff; }
+        #now-indicator-line { position: absolute; left: 0; width: 100%; height: 1px; background-color: #ff0000; z-index: 100; pointer-events: none; display: none; }
 
-        /* 실시간 빨간 선 (1px) */
-        #now-indicator-line {
-            position: absolute; left: 0; width: 100%; height: 1px;
-            background-color: #ff0000; z-index: 100; pointer-events: none; display: none;
-        }
-
-        .calendar-box { 
-            width: 75px; max-width: 75px; flex-shrink: 0; 
-            border-right: 1px solid #e5e5e5; background-color: #ffffff;
-        }
-        .calendar-title {
-            font-size: 10px; font-weight: bold; height: 35px; line-height: 35px; 
-            text-align: center; background: #ffffff; border-bottom: 1px solid #ddd; margin: 0;
-        }
-
+        .calendar-box { width: 75px; max-width: 75px; flex-shrink: 0; border-right: 1px solid #e5e5e5; background-color: #ffffff; }
+        .calendar-title { font-size: 10px; font-weight: bold; height: 35px; line-height: 35px; text-align: center; background: #ffffff; border-bottom: 1px solid #ddd; margin: 0; }
         .fc-timegrid-slot { height: 24px !important; border-bottom: 1px solid #e5e5e5 !important; background-color: #ffffff !important; }
-        .fc { max-width: 75px !important; background-color: transparent !important; }
+        .fc { max-width: 75px !important; }
         .fc-col-header, .fc-timegrid-slot-label { display: none !important; }
-        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; }
+        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; }
 
-        /* 파스텔톤 효과 및 진회색 폰트 강제 적용 */
-        .fc-event-past { 
-            filter: brightness(1.45) saturate(0.65) !important; 
-            opacity: 1 !important;
-        }
-        .event-text { 
-            font-size: 8px; color: white; padding: 2px; 
-            text-align: center; line-height: 1.2; 
-            font-weight: normal; word-break: break-all;
-        }
-        .fc-event-past .event-text { 
-            color: #444 !important; 
-            text-shadow: none !important;
-        }
+        /* 파스텔톤 및 진회색 글자 */
+        .fc-event-past { filter: brightness(1.45) saturate(0.65) !important; }
+        .event-text { font-size: 8px; color: white; padding: 2px; text-align: center; line-height: 1.2; font-weight: normal; word-break: break-all; }
+        .fc-event-past .event-text { color: #444 !important; text-shadow: none !important; }
     </style>
 </head>
 <body>
@@ -112,24 +58,70 @@
     </div>
     
     <div class="outer-wrapper">
-        <div class="time-column" id="time-column">
-            <div class="time-header"></div>
-        </div>
-        <div class="calendar-container">
+        <div class="time-column" id="time-column"><div class="time-header"></div></div>
+        <div class="calendar-container" id="calendar-wrapper">
             <div id="now-indicator-line"></div>
-            <script>
-                const titles = ["No.01","No.02","No.03","No.04","No.05","No.06","No.07","No.08","test.01","test.02","test.03","test.04","test.05","test.06"];
-                titles.forEach((t, i) => {
-                    document.write(`<div class="calendar-box"><h3 class="calendar-title">${t}</h3><div id="calendar${i+1}" class="calendar"></div></div>`);
-                });
-            </script>
-        </div>
+            </div>
     </div>
 
     <script>
-        // 주석: 09:00 눈금 위치 수정 및 실시간 음영 업데이트 로직을 전면 보완했습니다.
+        // [설정] 1단계에서 복사한 웹 앱 URL을 여기에 넣으세요
+        const SPREADSHEET_API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrSA2bmbbn9jUwwcFuejjBdNr7tMtFupN5N4FMQvy9lQ5UFqcYwHeJa5kUskINYpeo3G3aVbJGwLIZLNDDOzLPNxQuLrZLdy63L0XGycH5QGZVo5cVSwqPQQD64rIVHifcYrxcfm3FFVgPJDqb9-kQJNvfSb6WOC_FEDO62grJF6h6OGihg6UBiorwRDTQD8y2t0bZaRKzj-pedQCgoBRx2tnEx64J-9JY_rDDHMDBkwuQh5qD9Hy412QM-slZi3YzAYxFD9By05zVO9YQmYcWnTvUyL7fdMsGie_3Yu&lib=Mae0Xe637npIcRJaQZfVKAJkaqXxW3khf";
+        const GOOGLE_API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM";
+
         let currentDate = new Date();
         window.calendars = [];
+
+        async function init() {
+            syncTimeColumn();
+            updateMainDate();
+            
+            try {
+                // 시트에서 장비 목록 가져오기
+                const response = await fetch(SPREADSHEET_API_URL);
+                const printers = await response.json();
+                
+                const wrapper = document.getElementById('calendar-wrapper');
+                
+                printers.forEach((printer, index) => {
+                    // 1. 박스 만들기
+                    const box = document.createElement('div');
+                    box.className = 'calendar-box';
+                    box.innerHTML = `<h3 class="calendar-title">${printer.title}</h3><div id="calendar-${index}"></div>`;
+                    wrapper.appendChild(box);
+
+                    // 2. 캘린더 초기화
+                    let calendar = new FullCalendar.Calendar(document.getElementById(`calendar-${index}`), {
+                        initialView: 'timeGridDay',
+                        timeZone: 'Asia/Seoul',
+                        slotMinTime: '09:00:00', slotMaxTime: '23:00:00',
+                        slotDuration: '01:00:00', allDaySlot: false,
+                        headerToolbar: false,
+                        googleCalendarApiKey: GOOGLE_API_KEY,
+                        eventSources: [{ googleCalendarId: printer.id, color: printer.color }],
+                        eventDidMount: function(info) {
+                            if (info.event.end < new Date()) info.el.classList.add('fc-event-past');
+                        },
+                        eventContent: function(arg) {
+                            let domNode = document.createElement('div');
+                            domNode.className = 'event-text';
+                            domNode.innerHTML = arg.event.title;
+                            return { domNodes: [domNode] };
+                        }
+                    });
+                    calendar.render();
+                    calendars.push(calendar);
+                });
+
+                // 실시간 동기화 시작
+                setInterval(() => { updateRedLine(); refreshEventStatus(); }, 60000);
+                setTimeout(refreshEventStatus, 3000);
+
+            } catch (e) {
+                console.error("장비 목록 로드 실패:", e);
+                alert("장비 목록을 불러오지 못했습니다. API URL을 확인하세요.");
+            }
+        }
 
         function syncTimeColumn() {
             const col = document.getElementById('time-column');
@@ -141,18 +133,13 @@
             }
         }
 
-        // 실시간 음영 업데이트 로직 - 가장 확실한 '전수 조사' 방식
         function refreshEventStatus() {
             const now = new Date();
-            calendars.forEach(calendar => {
-                calendar.getEvents().forEach(event => {
-                    const el = event.el;
-                    if (el) {
-                        if (event.end < now) {
-                            el.classList.add('fc-event-past');
-                        } else {
-                            el.classList.remove('fc-event-past');
-                        }
+            calendars.forEach(cal => {
+                cal.getEvents().forEach(event => {
+                    if (event.el) {
+                        if (event.end < now) event.el.classList.add('fc-event-past');
+                        else event.el.classList.remove('fc-event-past');
                     }
                 });
             });
@@ -163,95 +150,25 @@
             const dayStr = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
             document.getElementById('main-date').innerText = `${dateStr} (${dayStr})`;
             updateRedLine();
-            calendars.forEach(cal => cal.refetchEvents());
+            calendars.forEach(cal => { cal.gotoDate(currentDate); cal.refetchEvents(); });
         }
 
         function updateRedLine() {
             const line = document.getElementById('now-indicator-line');
             const now = new Date();
             if (now.toDateString() === currentDate.toDateString()) {
-                const startHour = 9;
                 const currentHour = now.getHours() + (now.getMinutes() / 60);
                 if (currentHour >= 9 && currentHour <= 23) {
-                    const position = (currentHour - startHour) * 24 + 35;
-                    line.style.top = position + "px"; line.style.display = "block";
-                } else { line.style.display = "none"; }
-            } else { line.style.display = "none"; }
+                    line.style.top = (currentHour - 9) * 24 + 35 + "px";
+                    line.style.display = "block";
+                } else line.style.display = "none";
+            } else line.style.display = "none";
         }
 
-        function changeDate(days) {
-            currentDate.setDate(currentDate.getDate() + days);
-            updateMainDate();
-            calendars.forEach(cal => cal.gotoDate(currentDate));
-        }
+        function changeDate(days) { currentDate.setDate(currentDate.getDate() + days); updateMainDate(); }
+        function goToToday() { currentDate = new Date(); updateMainDate(); }
 
-        function goToToday() {
-            currentDate = new Date();
-            updateMainDate();
-            calendars.forEach(cal => cal.gotoDate(currentDate));
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            syncTimeColumn();
-            
-            const calendarData = [
-                { id: "learningfactory01@gmail.com", element: "calendar1", color: "#34A853" },
-                { id: "learningfactory11@gmail.com", element: "calendar2", color: "#34A853" },
-                { id: "learningfactory03@gmail.com", element: "calendar3", color: "#34A853" },
-                { id: "learningfactory13@gmail.com", element: "calendar4", color: "#34A853" },
-                { id: "learningfactory05@gmail.com", element: "calendar5", color: "#34A853" },
-                { id: "learningfactory06@gmail.com", element: "calendar6", color: "#34A853" },
-                { id: "learningfactory10@gmail.com", element: "calendar7", color: "#34A853" },
-                { id: "learningfactory08@gmail.com", element: "calendar8", color: "#34A853" },
-                { id: "learningfactory04@gmail.com", element: "calendar9", color: "#4285F4" },
-                { id: "learningfactory09@gmail.com", element: "calendar10", color: "#4285F4" },
-                { id: "learningfactory19@gmail.com", element: "calendar11", color: "#4285F4" },
-                { id: "learningfactory20@gmail.com", element: "calendar12", color: "#4285F4" },
-                { id: "learningfactory12@gmail.com", element: "calendar13", color: "#4285F4" },
-                { id: "learningfactory24@gmail.com", element: "calendar14", color: "#4285F4" }
-            ];
-
-            calendarData.forEach((cal) => {
-                let calendar = new FullCalendar.Calendar(document.getElementById(cal.element), {
-                    initialView: 'timeGridDay',
-                    timeZone: 'Asia/Seoul',
-                    slotMinTime: '09:00:00', slotMaxTime: '23:00:00',
-                    slotDuration: '01:00:00', allDaySlot: false,
-                    contentHeight: 'auto', headerToolbar: false,
-                    googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
-                    eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
-                    
-                    eventDidMount: function(info) {
-                        if (info.event.end < new Date()) {
-                            info.el.classList.add('fc-event-past');
-                        }
-                    },
-                    eventContent: function(arg) {
-                        let domNode = document.createElement('div');
-                        domNode.className = 'event-text';
-                        domNode.innerHTML = `${arg.event.title}`; 
-                        return { domNodes: [domNode] };
-                    }
-                });
-                calendar.render();
-                calendars.push(calendar);
-            });
-
-            updateMainDate();
-
-            // 1분마다 상태 체크
-            setInterval(() => {
-                updateRedLine();
-                refreshEventStatus();
-            }, 60000);
-
-            // 데이터 로드 완료 시점을 대비해 초기 3초간 1초마다 체크
-            let initialCount = 0;
-            const initialInterval = setInterval(() => {
-                refreshEventStatus();
-                if(++initialCount >= 3) clearInterval(initialInterval);
-            }, 1000);
-        });
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
