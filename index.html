@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Printer Schedule (Final Restore)</title>
+    <title>3D Printer Schedule (Stable Version)</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@5.11.3/main.global.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     
     <style>
-        /* [전체] 기본 레이아웃 및 폰트 설정 */
+        /* [전체] 배경 및 레이아웃 설정 */
         html, body { 
             font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif; 
             background-color: #ffffff; margin: 0; padding: 0; 
@@ -24,7 +24,7 @@
         }
         .main-date { display: block; font-size: 18px; font-weight: bold; margin-bottom: 8px; }
         
-        /* [요청 사항] 버튼 아래로 줄바꿈 */
+        /* 버튼 줄바꿈 적용 */
         .date-controls { display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .btn-group { display: flex; gap: 6px; }
         .date-controls button { 
@@ -32,14 +32,14 @@
             border: 1px solid #ccc; background: #fff; border-radius: 4px;
         }
 
-        /* [요청 사항] 달력 프레임 높이 600px 유지 */
+        /* 캘린더 프레임 높이 600px 유지 */
         .outer-wrapper {
-            display: flex; flex-direction: row; position: relative; background: #ffffff; 
+            display: flex; position: relative; background: #ffffff; 
             overflow-x: auto; overflow-y: hidden;
             height: 600px; width: 100%;
         }
 
-        /* 시각 칼럼 설정 및 눈금 미세 조정 */
+        /* 시각 칼럼 설정 */
         .time-column {
             width: 45px; flex-shrink: 0; background-color: #ffffff; border-right: 1px solid #ddd;
             position: sticky; left: 0; z-index: 501; height: calc(35px + (24px * 15)); 
@@ -54,28 +54,24 @@
             transform: translateY(-6px);
         }
         
-        /* 눈금 위치 조정 (09:00는 -1px, 나머지는 1px) */
+        /* [미세 조정] 09:00 눈금은 위로 1px, 나머지는 아래로 1px */
         .time-slot-sync::after {
             content: ""; position: absolute; right: 0; 
             width: 5px; height: 1px; background-color: #ccc;
         }
-        .time-slot-sync:first-child::after { top: -1px; }
+        .time-slot-sync:first-child::after { top: -1px; } 
         .time-slot-sync:not(:first-child)::after { top: 1px; }
 
-        /* 달력들이 나열되는 컨테이너 */
-        .calendar-container { 
-            display: flex; flex-direction: row; position: relative; 
-            height: fit-content; background-color: #ffffff; 
-        }
+        .calendar-container { display: inline-flex; position: relative; height: fit-content; background-color: #ffffff; }
 
-        /* 실시간 빨간 선 (1px) */
+        /* 실시간 빨간 선 1px 조정 */
         #now-indicator-line {
             position: absolute; left: 0; width: 100%; height: 1px;
             background-color: #ff0000; z-index: 100; pointer-events: none; display: none;
         }
 
         .calendar-box { 
-            width: 75px; min-width: 75px; flex-shrink: 0; 
+            width: 75px; max-width: 75px; flex-shrink: 0; 
             border-right: 1px solid #e5e5e5; background-color: #ffffff;
         }
         .calendar-title {
@@ -83,19 +79,20 @@
             text-align: center; background: #ffffff; border-bottom: 1px solid #ddd; margin: 0;
         }
 
-        /* FullCalendar 내부 스타일 복구 */
         .fc-timegrid-slot { height: 24px !important; border-bottom: 1px solid #e5e5e5 !important; background-color: #ffffff !important; }
+        .fc { max-width: 75px !important; background-color: transparent !important; }
         .fc-col-header, .fc-timegrid-slot-label { display: none !important; }
-        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; }
+        .fc-event { border: none !important; border-radius: 4px !important; margin: 1px !important; pointer-events: none !important; opacity: 1 !important; }
 
-        /* 파스텔톤 효과 및 진회색 폰트 */
+        /* 파스텔톤 효과 및 진회색 폰트 설정 */
         .fc-event-past { 
             filter: brightness(1.45) saturate(0.65) !important; 
         }
         .event-text { 
             font-size: 8px; color: white; padding: 2px; 
             text-align: center; line-height: 1.2; 
-            font-weight: normal; word-break: break-all;
+            font-weight: normal; 
+            word-break: break-all;
         }
         .fc-event-past .event-text { 
             color: #444 !important; 
@@ -120,79 +117,25 @@
         <div class="time-column" id="time-column">
             <div class="time-header"></div>
         </div>
-        <div class="calendar-container" id="calendar-wrapper">
+        <div class="calendar-container">
             <div id="now-indicator-line"></div>
-            </div>
+            <script>
+                // 주석: 수동으로 장비 리스트 관리 (속도 최적화 버전)
+                const titles = ["No.01","No.02","No.03","No.04","No.05","No.06","No.07","No.08","test.01","test.02","test.03","test.04","test.05","test.06"];
+                titles.forEach((t, i) => {
+                    document.write(`<div class="calendar-box"><h3 class="calendar-title">${t}</h3><div id="calendar${i+1}" class="calendar"></div></div>`);
+                });
+            </script>
+        </div>
     </div>
 
     <script>
-        // 주석: 구글 시트 연동 후 깨진 레이아웃을 복구하고 실시간 음영 로직을 강화했습니다.
-        const SPREADSHEET_API_URL = "https://script.google.com/macros/s/AKfycbzq-bjNTumfBqBPHXesrFKfsWIi3rOKOv8F7FP9bGz1a04cKbt5jFjgBNq1tB0DnUBp8A/exec";
-        const GOOGLE_API_KEY = "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM";
-
+        // 주석: 실시간 음영 로직 강화 및 모든 디자인 수치를 고정한 최종 안정화 버전입니다.
         let currentDate = new Date();
         window.calendars = [];
 
-        async function init() {
-            syncTimeColumn();
-            updateMainDate();
-            
-            try {
-                const response = await fetch(SPREADSHEET_API_URL);
-                const printers = await response.json();
-                
-                const wrapper = document.getElementById('calendar-wrapper');
-                
-                // 달력 박스들 먼저 생성
-                printers.forEach((printer, index) => {
-                    const box = document.createElement('div');
-                    box.className = 'calendar-box';
-                    box.innerHTML = `<h3 class="calendar-title">${printer.title}</h3><div id="calendar-${index}"></div>`;
-                    wrapper.appendChild(box);
-                });
-
-                // 생성된 박스들에 캘린더 주입
-                printers.forEach((printer, index) => {
-                    let calendarEl = document.getElementById(`calendar-${index}`);
-                    let calendar = new FullCalendar.Calendar(calendarEl, {
-                        initialView: 'timeGridDay',
-                        timeZone: 'Asia/Seoul',
-                        slotMinTime: '09:00:00', slotMaxTime: '23:00:00',
-                        slotDuration: '01:00:00', allDaySlot: false,
-                        headerToolbar: false,
-                        googleCalendarApiKey: GOOGLE_API_KEY,
-                        eventSources: [{ googleCalendarId: printer.id, color: printer.color }],
-                        eventDidMount: function(info) {
-                            if (info.event.end < new Date()) {
-                                info.el.classList.add('fc-event-past');
-                            }
-                        },
-                        eventContent: function(arg) {
-                            let domNode = document.createElement('div');
-                            domNode.className = 'event-text';
-                            domNode.innerHTML = `${arg.event.title}`; 
-                            return { domNodes: [domNode] };
-                        }
-                    });
-                    calendar.render();
-                    calendars.push(calendar);
-                });
-
-                // 초기 음영 체크 및 타이머 가동
-                setTimeout(refreshEventStatus, 2000);
-                setInterval(() => {
-                    updateRedLine();
-                    refreshEventStatus();
-                }, 60000);
-
-            } catch (e) {
-                console.error("장비 목록 로드 중 오류:", e);
-            }
-        }
-
         function syncTimeColumn() {
             const col = document.getElementById('time-column');
-            col.innerHTML = '<div class="time-header"></div>'; // 초기화
             for(let i = 9; i <= 23; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'time-slot-sync';
@@ -201,15 +144,17 @@
             }
         }
 
+        // 실시간 음영 업데이트 함수 (DOM 직접 접근 방식)
         function refreshEventStatus() {
             const now = new Date();
             calendars.forEach(calendar => {
                 calendar.getEvents().forEach(event => {
-                    if (event.el) {
+                    const el = event.el;
+                    if (el) {
                         if (event.end < now) {
-                            event.el.classList.add('fc-event-past');
+                            el.classList.add('fc-event-past');
                         } else {
-                            event.el.classList.remove('fc-event-past');
+                            el.classList.remove('fc-event-past');
                         }
                     }
                 });
@@ -221,20 +166,18 @@
             const dayStr = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
             document.getElementById('main-date').innerText = `${dateStr} (${dayStr})`;
             updateRedLine();
-            calendars.forEach(cal => {
-                cal.gotoDate(currentDate);
-                cal.refetchEvents();
-            });
+            calendars.forEach(cal => cal.refetchEvents());
         }
 
         function updateRedLine() {
             const line = document.getElementById('now-indicator-line');
             const now = new Date();
             if (now.toDateString() === currentDate.toDateString()) {
+                const startHour = 9;
                 const currentHour = now.getHours() + (now.getMinutes() / 60);
                 if (currentHour >= 9 && currentHour <= 23) {
-                    line.style.top = (currentHour - 9) * 24 + 35 + "px";
-                    line.style.display = "block";
+                    const position = (currentHour - startHour) * 24 + 35;
+                    line.style.top = position + "px"; line.style.display = "block";
                 } else { line.style.display = "none"; }
             } else { line.style.display = "none"; }
         }
@@ -242,14 +185,72 @@
         function changeDate(days) {
             currentDate.setDate(currentDate.getDate() + days);
             updateMainDate();
+            calendars.forEach(cal => cal.gotoDate(currentDate));
         }
 
         function goToToday() {
             currentDate = new Date();
             updateMainDate();
+            calendars.forEach(cal => cal.gotoDate(currentDate));
         }
 
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', function() {
+            syncTimeColumn();
+            
+            const calendarData = [
+                { id: "learningfactory01@gmail.com", element: "calendar1", color: "#34A853" },
+                { id: "learningfactory11@gmail.com", element: "calendar2", color: "#34A853" },
+                { id: "learningfactory03@gmail.com", element: "calendar3", color: "#34A853" },
+                { id: "learningfactory13@gmail.com", element: "calendar4", color: "#34A853" },
+                { id: "learningfactory05@gmail.com", element: "calendar5", color: "#34A853" },
+                { id: "learningfactory06@gmail.com", element: "calendar6", color: "#34A853" },
+                { id: "learningfactory10@gmail.com", element: "calendar7", color: "#34A853" },
+                { id: "learningfactory08@gmail.com", element: "calendar8", color: "#34A853" },
+                { id: "learningfactory04@gmail.com", element: "calendar9", color: "#4285F4" },
+                { id: "learningfactory09@gmail.com", element: "calendar10", color: "#4285F4" },
+                { id: "learningfactory19@gmail.com", element: "calendar11", color: "#4285F4" },
+                { id: "learningfactory20@gmail.com", element: "calendar12", color: "#4285F4" },
+                { id: "learningfactory12@gmail.com", element: "calendar13", color: "#4285F4" },
+                { id: "learningfactory24@gmail.com", element: "calendar14", color: "#4285F4" }
+            ];
+
+            calendarData.forEach((cal) => {
+                let calendar = new FullCalendar.Calendar(document.getElementById(cal.element), {
+                    initialView: 'timeGridDay',
+                    timeZone: 'Asia/Seoul',
+                    slotMinTime: '09:00:00', slotMaxTime: '23:00:00',
+                    slotDuration: '01:00:00', allDaySlot: false,
+                    contentHeight: 'auto', headerToolbar: false,
+                    googleCalendarApiKey: "AIzaSyAUU-C7wQhYfOYaGbm4VdhJ6kKqgeru4MM",
+                    eventSources: [{ googleCalendarId: cal.id, color: cal.color }],
+                    
+                    eventDidMount: function(info) {
+                        if (info.event.end < new Date()) {
+                            info.el.classList.add('fc-event-past');
+                        }
+                    },
+                    eventContent: function(arg) {
+                        let domNode = document.createElement('div');
+                        domNode.className = 'event-text';
+                        domNode.innerHTML = `${arg.event.title}`; 
+                        return { domNodes: [domNode] };
+                    }
+                });
+                calendar.render();
+                calendars.push(calendar);
+            });
+
+            updateMainDate();
+
+            // 1분마다 빨간 선과 이벤트 음영 상태를 강제 동기화
+            setInterval(() => {
+                updateRedLine();
+                refreshEventStatus();
+            }, 60000);
+
+            // 초기 로딩 후 2초 뒤 상태 업데이트
+            setTimeout(refreshEventStatus, 2500);
+        });
     </script>
 </body>
 </html>
